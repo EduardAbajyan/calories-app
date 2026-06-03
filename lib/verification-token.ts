@@ -1,12 +1,12 @@
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 
-// Token expires in 1 hour
-const VERIFICATION_TOKEN_EXPIRY = 60 ;
+// Token expires in 48 hours
+const VERIFICATION_TOKEN_EXPIRY = 2 * 60 * 1000; // 2 minutes in milliseconds
 
 export async function generateVerificationToken(email: string): Promise<string> {
   const token = randomUUID();
-  const expires = new Date(Date.now() + VERIFICATION_TOKEN_EXPIRY);
+  const expires = new Date(+Date.now() + VERIFICATION_TOKEN_EXPIRY);
 
   // Delete any existing tokens for this email
   await prisma.verificationToken.deleteMany({
