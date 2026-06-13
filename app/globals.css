@@ -3,19 +3,58 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --surface: #ffffff;
+  --surface-elevated: #fbfaf8;
+  --surface-muted: #f3eee6;
+  --surface-strong: #e9e2d6;
+  --border: #ded8ce;
+  --border-strong: #c8c0b3;
+  --accent: #8f5a19;
+  --accent-foreground: #fffaf2;
+  --accent-soft: #f6ead9;
+  --success: #166534;
+  --success-soft: #dcfce7;
+  --danger: #b42318;
+  --danger-soft: #fee4e2;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-strong: var(--surface-strong);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0b0c10;
+    --foreground: #f4f2ee;
+    --surface: #12151a;
+    --surface-elevated: #171b21;
+    --surface-muted: #1b2028;
+    --surface-strong: #242b34;
+    --border: #2d3641;
+    --border-strong: #3a4552;
+    --accent: #eab86f;
+    --accent-foreground: #17120a;
+    --accent-soft: #2d2518;
+    --success: #86efac;
+    --success-soft: #153323;
+    --danger: #fda29b;
+    --danger-soft: #3a1c1a;
   }
 }
 

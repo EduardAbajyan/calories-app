@@ -9,11 +9,9 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({
-  table,
-  meals,
+  children,
 }: {
-  table: React.ReactNode;
-  meals: React.ReactNode;
+  children: React.ReactNode;
 }) {
   const session = await auth();
 
@@ -48,40 +46,11 @@ export default async function DashboardLayout({
         </svg>
       </button>
       <Sidebar />
-      <div className="p-0 sm:ml-64 h-screen">
-        <div className="p-4 h-full">
-          <div className="h-full flex flex-col items-center justify-around rounded-base bg-neutral-secondary-soft ">
-            {table}
-            {meals}
-          </div>
+      <div className="p-0 sm:ml-64 min-h-screen">
+        <div className="p-0 min-h-screen">
+          {children}
         </div>
       </div>
     </>
   );
 }
-
-// "use server";
-// import { signOut } from "@/auth";
-
-// export default async function DashboardPage({
-//   searchParams,
-// }: {
-//   searchParams: { message?: string };
-// }) {
-//   const message = (await searchParams).message;
-
-//   async function handleSignOut() {
-//     "use server";
-//     return await signOut({ redirectTo: "/" });
-//   }
-
-//   return (
-//     <div>
-//       <p>Dashboard</p>
-//       {message && <p>{message}</p>}
-//       <form action={handleSignOut}>
-//         <button type="submit">Go back to Home</button>
-//       </form>
-//     </div>
-//   );
-// }
