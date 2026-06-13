@@ -132,7 +132,7 @@ export default async function AddFoodPage({
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top_left,var(--color-accent-soft),transparent_38%),radial-gradient(circle_at_top_right,var(--color-surface-strong),transparent_34%),linear-gradient(180deg,var(--color-background)_0%,var(--color-surface-elevated)_100%)] p-4">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top_left,var(--color-accent-soft),transparent_38%),radial-gradient(circle_at_top_right,var(--color-surface-strong),transparent_34%),linear-gradient(180deg,var(--color-background)_0%,var(--color-surface-elevated)_100%)] p-4 sm:p-8">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="-left-24 -top-20 absolute h-48 w-48 rounded-full bg-accent-soft/70 blur-3xl" />
         <div className="-bottom-16 -right-12 absolute h-56 w-56 rounded-full bg-surface-strong/60 blur-3xl" />
@@ -148,11 +148,10 @@ export default async function AddFoodPage({
               Add food
             </h1>
             <p className="mt-2 max-w-lg text-sm leading-6 text-foreground/70">
-              Create a new food entry with macros, calories, and an optional preview image.
+              Create a new food entry with macros, calories, and an optional
+              preview image.
             </p>
           </div>
-
-          
         </div>
 
         {isSuccess ? (
@@ -169,7 +168,10 @@ export default async function AddFoodPage({
 
         <form action={addFood} className="flex flex-col gap-5">
           <div className="space-y-2">
-            <label htmlFor="name" className="block text-sm font-medium text-foreground">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-foreground"
+            >
               Food name
             </label>
             <input
@@ -184,7 +186,10 @@ export default async function AddFoodPage({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label htmlFor="protein" className="block text-sm font-medium text-foreground">
+              <label
+                htmlFor="protein"
+                className="block text-sm font-medium text-foreground"
+              >
                 Protein (g)
               </label>
               <input
@@ -219,7 +224,10 @@ export default async function AddFoodPage({
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="fat" className="block text-sm font-medium text-foreground">
+              <label
+                htmlFor="fat"
+                className="block text-sm font-medium text-foreground"
+              >
                 Fat (g)
               </label>
               <input

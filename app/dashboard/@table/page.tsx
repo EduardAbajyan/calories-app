@@ -76,70 +76,78 @@ export default function Table({
   }, [routeValue, today]);
 
   return (
-    <div className="min-w-full space-y-6">
-      {/* Welcome Header Card */}
-      <div className="bg-neutral-primary-soft border border-default rounded-lg shadow-lg p-6">
-        <div className="text-center space-y-4">
-          <div className="flex items-center justify-center space-x-3">
-            {/* Medical Cross Icon - Calorie Counter Logo Style */}
-            <svg
-              className="w-10 h-10"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {/* Vertical bar - gradient from blue to green */}
-              <rect
-                x="9"
-                y="2"
-                width="6"
-                height="20"
-                rx="3"
-                fill="url(#verticalGradient)"
-              />
-              {/* Horizontal bar - gradient from green to blue */}
-              <rect
-                x="2"
-                y="9"
-                width="20"
-                height="6"
-                rx="3"
-                fill="url(#horizontalGradient)"
-              />
-              <defs>
-                <linearGradient
-                  id="verticalGradient"
-                  x1="0%"
-                  y1="0%"
-                  x2="0%"
-                  y2="100%"
-                >
-                  <stop offset="0%" stopColor="#3B82F6" />
-                  <stop offset="100%" stopColor="#10B981" />
-                </linearGradient>
-                <linearGradient
-                  id="horizontalGradient"
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="0%"
-                >
-                  <stop offset="0%" stopColor="#10B981" />
-                  <stop offset="100%" stopColor="#3B82F6" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <h3 className="text-2xl font-bold text-body">
-              Welcome to Your Calorie Tracker
-            </h3>
-          </div>
+    <div className="relative min-w-full md:min-w-full max-w-full md:max-w-full space-y-6">
+      <div className="overflow-hidden rounded-4xl border border-border/70 bg-[radial-gradient(circle_at_top_left,var(--color-accent-soft),transparent_36%),linear-gradient(180deg,var(--color-surface)_0%,var(--color-surface-elevated)_100%)] shadow-[0_24px_70px_rgba(0,0,0,0.14)] backdrop-blur-xl px-0 py-8 sm:p-8">
+        <div className="min-w-full max-w-full   space-y-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="mb-3 inline-flex rounded-full border border-border bg-surface/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-accent shadow-sm">
+                Daily log
+              </p>
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-surface/80 shadow-sm">
+                  <svg
+                    className="h-7 w-7"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <rect
+                      x="9"
+                      y="2"
+                      width="6"
+                      height="20"
+                      rx="3"
+                      fill="url(#verticalGradient)"
+                    />
+                    <rect
+                      x="2"
+                      y="9"
+                      width="20"
+                      height="6"
+                      rx="3"
+                      fill="url(#horizontalGradient)"
+                    />
+                    <defs>
+                      <linearGradient
+                        id="verticalGradient"
+                        x1="0%"
+                        y1="0%"
+                        x2="0%"
+                        y2="100%"
+                      >
+                        <stop offset="0%" stopColor="#3B82F6" />
+                        <stop offset="100%" stopColor="#10B981" />
+                      </linearGradient>
+                      <linearGradient
+                        id="horizontalGradient"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="0%"
+                      >
+                        <stop offset="0%" stopColor="#10B981" />
+                        <stop offset="100%" stopColor="#3B82F6" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </span>
+                <div>
+                  <h3 className="text-2xl font-semibold tracking-tight text-foreground">
+                    Welcome to your calorie tracker
+                  </h3>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-foreground/70">
+                    Review a specific day, log meals, and compare entries
+                    without leaving the dashboard.
+                  </p>
+                </div>
+              </div>
+            </div>
 
-          {/* Date Selection Card */}
-          <div className="bg-background border border-default rounded-lg p-6 shadow-sm">
-            <form action="" className="space-y-4">
-              <div className="flex items-center justify-center space-x-2 mb-3">
+            <div className="rounded-3xl border border-border bg-surface/85 p-5 shadow-sm lg:w-84">
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
                 <svg
-                  className="w-5 h-5 text-fg-brand"
+                  className="h-5 w-5 text-accent"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -151,25 +159,20 @@ export default function Table({
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                <label
-                  htmlFor="date"
-                  className="text-lg font-semibold text-body"
-                >
-                  Select a Date
-                </label>
+                <label htmlFor="date">Select a date</label>
               </div>
 
-              <div className="max-w-xs mx-auto">
+              <form action="" className="space-y-4">
                 <input
                   type="date"
                   name="date"
                   id="date"
-                  className="w-full px-4 py-3 border border-default rounded-lg bg-neutral-primary-soft text-body text-center font-medium shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-fg-brand focus:border-fg-brand focus:shadow-lg"
+                  className="w-full rounded-2xl border border-border bg-surface-elevated px-4 py-3 text-center text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-accent focus:ring-4 focus:ring-accent-soft"
                   min={minDate}
                   max={maxDate}
                   value={selectedDate}
                   onChange={(e) => {
-                    e.target.disabled = true; // Prevent multiple rapid changes
+                    e.target.disabled = true;
                     const nextDate = e.target.value;
                     setIsChangingDate(true);
                     setSelectedDate(nextDate);
@@ -183,30 +186,59 @@ export default function Table({
                     );
                   }}
                 />
-              </div>
 
-              <p className="text-sm text-body opacity-70 flex items-center justify-center space-x-1">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span>Data available for the last 3 months only</span>
+                <p className="flex items-center gap-2 text-sm leading-6 text-foreground/65">
+                  <svg
+                    className="h-4 w-4 shrink-0 text-accent"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Data is available for the last 3 months.
+                </p>
+              </form>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-border bg-surface/75 px-4 py-3 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+                Current view
               </p>
-            </form>
+              <p className="mt-2 text-lg font-semibold text-foreground">
+                {dayOffset === 0
+                  ? "Today"
+                  : `${dayOffset} day${dayOffset === 1 ? "" : "s"} ago`}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-surface/75 px-4 py-3 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+                Selected date
+              </p>
+              <p className="mt-2 text-lg font-semibold text-foreground">
+                {selectedDate}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-surface/75 px-4 py-3 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+                Window
+              </p>
+              <p className="mt-2 text-lg font-semibold text-foreground">
+                90 days
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-neutral-primary-soft border border-default rounded-lg shadow-lg">
+      <div className="overflow-hidden rounded-[28px] border border-border/70 bg-surface/80 shadow-[0_24px_70px_rgba(0,0,0,0.14)] backdrop-blur-xl">
         {isChangingDate && <Loading />}
         <div className={isChangingDate ? "hidden" : undefined}>
           <CaloriesTable

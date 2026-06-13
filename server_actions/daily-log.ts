@@ -72,6 +72,7 @@ async function getOrCreateUserDay(userId: string, dayStart: Date) {
 export interface DailyLogItem {
   id: number;
   name: string;
+  image?: string | null;
   amount: number;
   calories: number;
   protein: number;
@@ -135,6 +136,7 @@ export async function fetchChosenDate(day = 0): Promise<DailyLogItem[]> {
         return {
           id: log.id,
           name: log.food.name,
+          image: log.food.image,
           amount: log.amount,
           calories: Math.round((log.food.calories * log.amount) / 100), // Assuming calories per 100g
           protein: Math.round((log.food.protein * log.amount) / 100),
@@ -172,6 +174,7 @@ export async function fetchChosenDate(day = 0): Promise<DailyLogItem[]> {
         return {
           id: log.id,
           name: log.dish.name,
+          image: log.dish.image,
           amount: log.amount,
           calories: Math.round(totalCalories * log.amount),
           protein: Math.round(totalProtein * log.amount),
@@ -183,6 +186,7 @@ export async function fetchChosenDate(day = 0): Promise<DailyLogItem[]> {
         return {
           id: log.id,
           name: "Unknown item",
+          image: null,
           amount: log.amount,
           calories: 0,
           protein: 0,

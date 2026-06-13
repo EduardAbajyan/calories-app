@@ -15,6 +15,34 @@ export default function TableComponent({
   day: number | undefined;
   onDayLoad?: () => void;
 }): JSX.Element {
+  const dataCellClass = "px-3 py-3 text-sm text-foreground";
+  const metricCellClass =
+    "px-3 py-3 text-sm font-medium text-foreground/75 whitespace-nowrap";
+  const deleteCellClass =
+    "w-12 px-3 py-3 text-center text-foreground/55 transition hover:text-accent";
+  const inputClass =
+    "w-full min-w-0 rounded-2xl border border-border bg-surface px-3 py-2 text-sm text-foreground shadow-sm outline-none transition placeholder:text-foreground/35 focus:border-accent focus:ring-4 focus:ring-accent-soft";
+
+  function renderItemAvatar(name: string, image?: string | null) {
+    const initial = name.trim().charAt(0).toUpperCase() || "?";
+
+    if (image) {
+      return (
+        <img
+          src={image}
+          alt={name}
+          className="h-8 w-8 shrink-0 rounded-xl border border-border object-cover shadow-sm"
+        />
+      );
+    }
+
+    return (
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-border bg-surface-elevated text-[11px] font-semibold uppercase text-accent shadow-sm">
+        {initial}
+      </div>
+    );
+  }
+
   const [set, setSet] = useState<
     | {
         id: number;
@@ -54,28 +82,33 @@ export default function TableComponent({
           id: item.id,
           checkbox: (
             <td
-              className="w-12 px-2 py-1.5 cursor-pointer hover:text-fg-brand"
+              className={`${deleteCellClass} cursor-pointer`}
               onClick={() => deleteHandler(item.id)}
             >
-              <div className="w-6 h-6 flex items-center justify-center">☐</div>
+              <div className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface-elevated shadow-sm">
+                ✓
+              </div>
             </td>
           ),
-          name: <td className="w-1/3 px-2 py-1.5 text-body">{item.name}</td>,
-          amount: (
-            <td className="w-28 px-2 py-1.5 text-body">{item.amount}g</td>
+          name: (
+            <td className={`w-1/3 min-w-56 font-medium ${dataCellClass}`}>
+              <div className="flex items-center gap-3">
+                {renderItemAvatar(item.name, item.image)}
+                <span className="min-w-0 truncate">{item.name}</span>
+              </div>
+            </td>
           ),
+          amount: <td className={`w-28 ${metricCellClass}`}>{item.amount}g</td>,
           calories: (
-            <td className="w-32 px-2 py-1.5 text-body">{item.calories} cal</td>
+            <td className={`w-32 ${metricCellClass}`}>{item.calories} cal</td>
           ),
           protein: (
-            <td className="w-24 px-2 py-1.5 text-body">{item.protein}g</td>
+            <td className={`w-24 ${metricCellClass}`}>{item.protein}g</td>
           ),
           carbohydrates: (
-            <td className="w-32 px-2 py-1.5 text-body">
-              {item.carbohydrates}g
-            </td>
+            <td className={`w-32 ${metricCellClass}`}>{item.carbohydrates}g</td>
           ),
-          fat: <td className="w-20 px-2 py-1.5 text-body">{item.fat}g</td>,
+          fat: <td className={`w-20 ${metricCellClass}`}>{item.fat}g</td>,
         }));
 
         setSet(formattedData);
@@ -141,40 +174,47 @@ export default function TableComponent({
           id: newId,
           checkbox: (
             <td
-              className="w-12 px-2 py-1.5 cursor-pointer hover:text-fg-brand text-left"
+              className={`${deleteCellClass} cursor-pointer`}
               onClick={() => deleteHandler(newId)}
             >
-              <div className="w-6 h-6 flex items-center justify-center">𐄂</div>
+              <div className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface-elevated shadow-sm">
+                ×
+              </div>
             </td>
           ),
           name: (
-            <td className="w-1/3 px-2 py-1.5">
-              <input
-                type="text"
-                placeholder="Name"
-                defaultValue=""
-                onChange={(e) =>
-                  setNewItems((prev) => ({
-                    ...prev,
-                    [newId]: {
-                      ...(prev[newId] || {
-                        name: "",
-                        amount: "",
-                        calories: "",
-                        protein: "",
-                        carbohydrates: "",
-                        fat: "",
-                      }),
-                      name: e.target.value,
-                    },
-                  }))
-                }
-                className="border border-default rounded-base p-1 w-full min-w-0 bg-neutral-primary-soft text-body focus:ring-2 focus:ring-fg-brand focus:border-fg-brand text-left"
-              />
+            <td className="w-1/3 min-w-56 px-3 py-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-border bg-surface-elevated text-[11px] font-semibold uppercase text-accent shadow-sm">
+                  +
+                </div>
+                <input
+                  type="text"
+                  placeholder="Name"
+                  defaultValue=""
+                  onChange={(e) =>
+                    setNewItems((prev) => ({
+                      ...prev,
+                      [newId]: {
+                        ...(prev[newId] || {
+                          name: "",
+                          amount: "",
+                          calories: "",
+                          protein: "",
+                          carbohydrates: "",
+                          fat: "",
+                        }),
+                        name: e.target.value,
+                      },
+                    }))
+                  }
+                  className={inputClass}
+                />
+              </div>
             </td>
           ),
           amount: (
-            <td className="w-28 px-2 py-1.5">
+            <td className="w-28 px-3 py-3">
               <input
                 type="number"
                 placeholder="Grams"
@@ -195,12 +235,12 @@ export default function TableComponent({
                     },
                   }))
                 }
-                className="border border-default rounded-base p-1 w-full min-w-0 bg-neutral-primary-soft text-body focus:ring-2 focus:ring-fg-brand focus:border-fg-brand text-left"
+                className={inputClass}
               />
             </td>
           ),
           calories: (
-            <td className="w-32 px-2 py-1.5">
+            <td className="w-32 px-3 py-3">
               <input
                 type="number"
                 placeholder="Total calories"
@@ -221,12 +261,12 @@ export default function TableComponent({
                     },
                   }))
                 }
-                className="border border-default rounded-base p-1 w-full min-w-0 bg-neutral-primary-soft text-body focus:ring-2 focus:ring-fg-brand focus:border-fg-brand text-left"
+                className={inputClass}
               />
             </td>
           ),
           protein: (
-            <td className="w-24 px-2 py-1.5">
+            <td className="w-24 px-3 py-3">
               <input
                 type="number"
                 placeholder="Protein"
@@ -247,12 +287,12 @@ export default function TableComponent({
                     },
                   }))
                 }
-                className="border border-default rounded-base p-1 w-full min-w-0 bg-neutral-primary-soft text-body focus:ring-2 focus:ring-fg-brand focus:border-fg-brand text-left"
+                className={inputClass}
               />
             </td>
           ),
           carbohydrates: (
-            <td className="w-32 px-2 py-1.5">
+            <td className="w-32 px-3 py-3">
               <input
                 type="number"
                 placeholder="Carbs"
@@ -273,12 +313,12 @@ export default function TableComponent({
                     },
                   }))
                 }
-                className="border border-default rounded-base p-1 w-full min-w-0 bg-neutral-primary-soft text-body focus:ring-2 focus:ring-fg-brand focus:border-fg-brand text-left"
+                className={inputClass}
               />
             </td>
           ),
           fat: (
-            <td className="w-20 px-2 py-1.5">
+            <td className="w-20 px-3 py-3">
               <input
                 type="number"
                 placeholder="Fat"
@@ -299,7 +339,7 @@ export default function TableComponent({
                     },
                   }))
                 }
-                className="border border-default rounded-base p-1 w-full min-w-0 bg-neutral-primary-soft text-body focus:ring-2 focus:ring-fg-brand focus:border-fg-brand text-left"
+                className={inputClass}
               />
             </td>
           ),
@@ -347,28 +387,33 @@ export default function TableComponent({
           id: item.id,
           checkbox: (
             <td
-              className="w-12 px-2 py-1.5 cursor-pointer hover:text-fg-brand"
+              className={`${deleteCellClass} cursor-pointer`}
               onClick={() => deleteHandler(item.id)}
             >
-              <div className="w-6 h-6 flex items-center justify-center">☐</div>
+              <div className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface-elevated shadow-sm">
+                ✓
+              </div>
             </td>
           ),
-          name: <td className="w-1/3 px-2 py-1.5 text-body">{item.name}</td>,
-          amount: (
-            <td className="w-28 px-2 py-1.5 text-body">{item.amount}g</td>
+          name: (
+            <td className={`w-1/3 min-w-56 font-medium ${dataCellClass}`}>
+              <div className="flex items-center gap-3">
+                {renderItemAvatar(item.name, item.image)}
+                <span className="min-w-0 truncate">{item.name}</span>
+              </div>
+            </td>
           ),
+          amount: <td className={`w-28 ${metricCellClass}`}>{item.amount}g</td>,
           calories: (
-            <td className="w-32 px-2 py-1.5 text-body">{item.calories} cal</td>
+            <td className={`w-32 ${metricCellClass}`}>{item.calories} cal</td>
           ),
           protein: (
-            <td className="w-24 px-2 py-1.5 text-body">{item.protein}g</td>
+            <td className={`w-24 ${metricCellClass}`}>{item.protein}g</td>
           ),
           carbohydrates: (
-            <td className="w-32 px-2 py-1.5 text-body">
-              {item.carbohydrates}g
-            </td>
+            <td className={`w-32 ${metricCellClass}`}>{item.carbohydrates}g</td>
           ),
-          fat: <td className="w-20 px-2 py-1.5 text-body">{item.fat}g</td>,
+          fat: <td className={`w-20 ${metricCellClass}`}>{item.fat}g</td>,
         }));
 
         setSet(formattedData);
@@ -389,79 +434,108 @@ export default function TableComponent({
 
   if (loading && set === null) {
     return (
-      <div className="min-w-full bg-neutral-primary-soft border border-default rounded-base shadow-md mt-10 p-8 text-center">
-        <div className="text-body">Loading your daily log... ⏳</div>
+      <div className="min-w-full rounded-[28px] border border-border/70 bg-surface/80 p-8 text-center shadow-[0_20px_60px_rgba(0,0,0,0.12)] backdrop-blur-xl">
+        <div className="text-sm font-medium text-foreground/70">
+          Loading your daily log... ⏳
+        </div>
       </div>
     );
   }
 
   return (
-    <table className="min-w-full bg-neutral-primary-soft border border-default rounded-base shadow-md mt-10 table-fixed">
-      <thead>
-        <tr className="border-b border-default">
-          <th className="w-12 px-2 py-1.5 text-body font-bold text-left">☑</th>
-          <th className="w-1/3 px-2 py-1.5 text-body font-bold text-left">
-            Name
-          </th>
-          <th className="w-28 px-2 py-1.5 text-body font-bold text-left">
-            Amount
-          </th>
-          <th className="w-24 px-2 py-1.5 text-body font-bold text-left">
-            Protein
-          </th>
-          <th className="w-32 px-2 py-1.5 text-body font-bold text-left">
-            Carbohydrates
-          </th>
-          <th className="w-20 px-2 py-1.5 text-body font-bold text-left">
-            Fat
-          </th>
-          <th className="w-32 px-2 py-1.5 text-body font-bold text-left">
-            Calories
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {set?.map((item) => (
-          <tr
-            key={item.id}
-            className="border-b border-default hover:bg-neutral-tertiary"
+    <section className="min-w-full max-w-full overflow-auto rounded-[28px] border border-border/70 bg-surface/80 shadow-[0_20px_60px_rgba(0,0,0,0.12)] backdrop-blur-xl">
+      <div className="min-w-full max-w-full  flex flex-col gap-4 border-b border-border/70 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div>
+          <p className="mb-2 inline-flex rounded-full border border-border bg-surface-elevated px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-accent">
+            Entries
+          </p>
+          <h4 className="text-lg font-semibold tracking-tight text-foreground">
+            Daily nutrition table
+          </h4>
+          <p className="mt-1 text-sm leading-6 text-foreground/70">
+            Add, review, and remove foods for the selected day.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={addHandler}
+            className="inline-flex h-11 items-center justify-center rounded-full border border-border bg-surface-elevated px-5 text-sm font-medium text-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-border-strong hover:bg-surface"
           >
-            {item.checkbox}
-            {item.name}
-            {item.amount}
-            {item.protein}
-            {item.carbohydrates}
-            {item.fat}
-            {item.calories}
-          </tr>
-        ))}
-        <tr className="border-b border-default hover:bg-neutral-tertiary">
-          <td className="w-12 px-2 py-1.5">
+            Add row
+          </button>
+          {saveButton ? (
             <button
-              onClick={addHandler}
-              className="hover:text-fg-brand transition duration-75 w-6 h-6 flex items-center justify-center"
+              onClick={saveHandler}
+              disabled={loading}
+              className="inline-flex h-11 items-center justify-center rounded-full bg-accent px-5 text-sm font-bold uppercase tracking-[0.14em] text-accent-foreground shadow-[0_14px_30px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(0,0,0,0.24)] disabled:translate-y-0 disabled:opacity-60 disabled:shadow-none"
             >
-              ➕
+              {loading ? "Saving..." : "Save entries"}
             </button>
-          </td>
-          <td className="w-1/3 px-2 py-1.5"></td>
-          <td className="w-28 px-2 py-1.5"></td>
-          <td className="w-24 px-2 py-1.5"></td>
-          <td className="w-32 px-2 py-1.5"></td>
-          <td className="w-20 px-2 py-1.5"></td>
-          <td className="w-32 px-2 py-1.5">
-            {saveButton && (
-              <button
-                onClick={saveHandler}
-                disabled={loading}
-                className="hover:text-fg-brand transition duration-75 disabled:opacity-50"
+          ) : null}
+        </div>
+      </div>
+
+      <div className="min-w-full max-w-full   overflow-x-auto px-3 py-3 sm:px-4 sm:py-4">
+        <table className="min-w-full max-w-full   table-fixed overflow-hidden rounded-3xl border border-border/70 bg-[linear-gradient(180deg,var(--color-surface)_0%,var(--color-surface-elevated)_100%)]">
+          <thead>
+            <tr className="border-b border-border/70 bg-surface-elevated/80">
+              <th className="w-12 px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+                Done
+              </th>
+              <th className="w-1/3 px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+                Name
+              </th>
+              <th className="w-28 px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+                Amount
+              </th>
+              <th className="w-24 px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+                Protein
+              </th>
+              <th className="w-32 px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+                Carbs
+              </th>
+              <th className="w-20 px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+                Fat
+              </th>
+              <th className="w-32 px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+                Calories
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {set?.map((item) => (
+              <tr
+                key={item.id}
+                className="border-b border-border/70 transition hover:bg-accent-soft/40"
               >
-                {loading ? "⏳" : "💾"} Save
-              </button>
-            )}
-          </td>
-        </tr>
-      </tbody>
-    </table>
+                {item.checkbox}
+                {item.name}
+                {item.amount}
+                {item.protein}
+                {item.carbohydrates}
+                {item.fat}
+                {item.calories}
+              </tr>
+            ))}
+            <tr className="hidden lg:table-row bg-surface/60">
+              <td className="px-3 py-4 text-sm font-medium text-foreground/55">
+                New
+              </td>
+              <td className="px-3 py-4 text-sm text-foreground/45">
+                Use the button above to add another line item.
+              </td>
+              <td className="px-3 py-4"></td>
+              <td className="px-3 py-4"></td>
+              <td className="px-3 py-4"></td>
+              <td className="px-3 py-4"></td>
+              <td className="px-3 py-4 text-right text-sm text-foreground/55">
+                {saveButton ? "Unsaved changes" : "All changes saved"}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }

@@ -490,7 +490,7 @@ export default async function LikedMealsPage({
             </p>
           ) : (
             <>
-              <ul className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
                 {visibleLikedMeals.map((row, index) => (
                   <li
                     key={row.meal.id}
@@ -574,7 +574,7 @@ export default async function LikedMealsPage({
             </p>
           ) : (
             <>
-              <ul className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
                 {visibleUnconfirmedMeals.map((meal, index) => (
                   <li
                     key={meal.id}
@@ -688,7 +688,7 @@ export default async function LikedMealsPage({
             <p className="text-sm text-fg-disabled">No dishes found.</p>
           ) : (
             <>
-              <ul className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
                 {visibleDishMatches.map((dish) => (
                   <li key={dish.id}>
                     <form action={createSingleDishMeal}>
@@ -788,7 +788,7 @@ export default async function LikedMealsPage({
             <p className="text-sm text-fg-disabled">No foods found.</p>
           ) : (
             <>
-              <ul className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
                 {visibleFoodMatches.map((food) => (
                   <li key={food.id}>
                     <form action={createSingleFoodMeal}>
