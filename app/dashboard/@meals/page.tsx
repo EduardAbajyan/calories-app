@@ -535,7 +535,7 @@ export default async function MealsPage({
             <p className="text-sm text-foreground/60">No dishes found.</p>
           ) : (
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {dishMatches.map((dish) => (
+              {dishMatches.map((dish: (typeof dishMatches)[number]) => (
                 <li
                   key={dish.id}
                   className="rounded-base bg-neutral-primary-soft p-3"
@@ -620,7 +620,7 @@ export default async function MealsPage({
             <p className="text-sm text-foreground/60">No foods found.</p>
           ) : (
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {foodMatches.map((food) => (
+              {foodMatches.map((food: (typeof foodMatches)[number]) => (
                 <li
                   key={food.id}
                   className="rounded-base bg-neutral-primary-soft p-3"
