@@ -502,60 +502,62 @@ export default async function LikedMealsPage({
           ) : (
             <>
               <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
-                {visibleLikedMeals.map((row, index) => (
-                  <li
-                    key={row.meal.id}
-                    className="rounded-base bg-neutral-primary-soft p-3"
-                  >
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="h-56 w-56 shrink-0 overflow-hidden rounded-base bg-background">
-                        {row.meal.image ? (
-                          <img
-                            src={row.meal.image}
-                            alt={row.meal.name}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-[10px] text-fg-disabled">
-                            No image
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm font-medium text-body">
-                          {index + 1}. {row.meal.name}
-                        </p>
-                        <p className="text-xs text-fg-disabled">
-                          consumed {row.countsConsumed} times
-                        </p>
-                        <p className="mt-1 text-xs text-fg-disabled">
-                          likes {row.meal.likes}
-                        </p>
-                        <form action={unlikeMeal} className="mt-2">
-                          <input
-                            type="hidden"
-                            name="mealId"
-                            value={row.meal.id}
-                          />
-                          <button
-                            type="submit"
-                            className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-linear-to-r from-slate-100 to-zinc-200 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1"
-                          >
-                            <svg
-                              className="h-3.5 w-3.5"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                              aria-hidden="true"
+                {visibleLikedMeals.map(
+                  (row: (typeof visibleLikedMeals)[number], index: number) => (
+                    <li
+                      key={row.meal.id}
+                      className="rounded-base bg-neutral-primary-soft p-3"
+                    >
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-56 w-56 shrink-0 overflow-hidden rounded-base bg-background">
+                          {row.meal.image ? (
+                            <img
+                              src={row.meal.image}
+                              alt={row.meal.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-[10px] text-fg-disabled">
+                              No image
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm font-medium text-body">
+                            {index + 1}. {row.meal.name}
+                          </p>
+                          <p className="text-xs text-fg-disabled">
+                            consumed {row.countsConsumed} times
+                          </p>
+                          <p className="mt-1 text-xs text-fg-disabled">
+                            likes {row.meal.likes}
+                          </p>
+                          <form action={unlikeMeal} className="mt-2">
+                            <input
+                              type="hidden"
+                              name="mealId"
+                              value={row.meal.id}
+                            />
+                            <button
+                              type="submit"
+                              className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-linear-to-r from-slate-100 to-zinc-200 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1"
                             >
-                              <path d="M5 5.7a1 1 0 0 1 1.4 0L10 9.3l3.6-3.6a1 1 0 1 1 1.4 1.4L11.4 10.7l3.6 3.6a1 1 0 0 1-1.4 1.4L10 12.1l-3.6 3.6a1 1 0 0 1-1.4-1.4l3.6-3.6-3.6-3.6a1 1 0 0 1 0-1.4z" />
-                            </svg>
-                            Unlike
-                          </button>
-                        </form>
+                              <svg
+                                className="h-3.5 w-3.5"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path d="M5 5.7a1 1 0 0 1 1.4 0L10 9.3l3.6-3.6a1 1 0 1 1 1.4 1.4L11.4 10.7l3.6 3.6a1 1 0 0 1-1.4 1.4L10 12.1l-3.6 3.6a1 1 0 0 1-1.4-1.4l3.6-3.6-3.6-3.6a1 1 0 0 1 0-1.4z" />
+                              </svg>
+                              Unlike
+                            </button>
+                          </form>
+                        </div>
                       </div>
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  ),
+                )}
               </ul>
               {hasMoreLikedMeals ? (
                 <div className="flex justify-center pt-4">
@@ -586,53 +588,62 @@ export default async function LikedMealsPage({
           ) : (
             <>
               <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
-                {visibleUnconfirmedMeals.map((meal, index) => (
-                  <li
-                    key={meal.id}
-                    className="rounded-base bg-neutral-primary-soft p-3"
-                  >
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="h-56 w-56 shrink-0 overflow-hidden rounded-base bg-background">
-                        {meal.image ? (
-                          <img
-                            src={meal.image}
-                            alt={meal.name}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-[10px] text-fg-disabled">
-                            No image
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm font-medium text-body">
-                          {index + 1}. {meal.name}
-                        </p>
-                        <p className="mt-1 text-xs text-fg-disabled">
-                          likes {meal.likes}
-                        </p>
-                        <form action={likeMeal} className="mt-2">
-                          <input type="hidden" name="mealId" value={meal.id} />
-                          <button
-                            type="submit"
-                            className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-linear-to-r from-amber-200 via-orange-200 to-rose-200 px-3 py-1.5 text-xs font-semibold text-amber-900 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1"
-                          >
-                            <svg
-                              className="h-3.5 w-3.5"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                              aria-hidden="true"
+                {visibleUnconfirmedMeals.map(
+                  (
+                    meal: (typeof visibleUnconfirmedMeals)[number],
+                    index: number,
+                  ) => (
+                    <li
+                      key={meal.id}
+                      className="rounded-base bg-neutral-primary-soft p-3"
+                    >
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-56 w-56 shrink-0 overflow-hidden rounded-base bg-background">
+                          {meal.image ? (
+                            <img
+                              src={meal.image}
+                              alt={meal.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-[10px] text-fg-disabled">
+                              No image
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm font-medium text-body">
+                            {index + 1}. {meal.name}
+                          </p>
+                          <p className="mt-1 text-xs text-fg-disabled">
+                            likes {meal.likes}
+                          </p>
+                          <form action={likeMeal} className="mt-2">
+                            <input
+                              type="hidden"
+                              name="mealId"
+                              value={meal.id}
+                            />
+                            <button
+                              type="submit"
+                              className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-linear-to-r from-amber-200 via-orange-200 to-rose-200 px-3 py-1.5 text-xs font-semibold text-amber-900 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1"
                             >
-                              <path d="M10 17.5l-1.2-1.1C4.6 12.5 2 10.1 2 7.1 2 4.7 3.9 2.8 6.3 2.8c1.4 0 2.8.7 3.7 1.8.9-1.1 2.3-1.8 3.7-1.8 2.4 0 4.3 1.9 4.3 4.3 0 3-2.6 5.4-6.8 9.3L10 17.5z" />
-                            </svg>
-                            Like
-                          </button>
-                        </form>
+                              <svg
+                                className="h-3.5 w-3.5"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path d="M10 17.5l-1.2-1.1C4.6 12.5 2 10.1 2 7.1 2 4.7 3.9 2.8 6.3 2.8c1.4 0 2.8.7 3.7 1.8.9-1.1 2.3-1.8 3.7-1.8 2.4 0 4.3 1.9 4.3 4.3 0 3-2.6 5.4-6.8 9.3L10 17.5z" />
+                              </svg>
+                              Like
+                            </button>
+                          </form>
+                        </div>
                       </div>
-                    </div>
-                  </li>
-                ))}
+                    </li>
+                  ),
+                )}
               </ul>
               {hasMoreUnconfirmedMeals ? (
                 <div className="flex justify-center pt-4">
@@ -700,39 +711,41 @@ export default async function LikedMealsPage({
           ) : (
             <>
               <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
-                {visibleDishMatches.map((dish) => (
-                  <li key={dish.id}>
-                    <form action={createSingleDishMeal}>
-                      <input type="hidden" name="dishId" value={dish.id} />
-                      <button
-                        type="submit"
-                        className="flex w-full flex-col items-center gap-3 rounded-base bg-neutral-primary-soft p-3 text-center hover:bg-neutral-primary"
-                      >
-                        <div className="h-56 w-56 overflow-hidden rounded-base bg-background">
-                          {dish.image ? (
-                            <img
-                              src={dish.image}
-                              alt={dish.name}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center text-[10px] text-fg-disabled">
-                              No image
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-body">
-                            {dish.name}
-                          </p>
-                          <p className="mt-1 text-xs text-fg-disabled">
-                            Click to create single-dish meal
-                          </p>
-                        </div>
-                      </button>
-                    </form>
-                  </li>
-                ))}
+                {visibleDishMatches.map(
+                  (dish: (typeof visibleDishMatches)[number]) => (
+                    <li key={dish.id}>
+                      <form action={createSingleDishMeal}>
+                        <input type="hidden" name="dishId" value={dish.id} />
+                        <button
+                          type="submit"
+                          className="flex w-full flex-col items-center gap-3 rounded-base bg-neutral-primary-soft p-3 text-center hover:bg-neutral-primary"
+                        >
+                          <div className="h-56 w-56 overflow-hidden rounded-base bg-background">
+                            {dish.image ? (
+                              <img
+                                src={dish.image}
+                                alt={dish.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-[10px] text-fg-disabled">
+                                No image
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-body">
+                              {dish.name}
+                            </p>
+                            <p className="mt-1 text-xs text-fg-disabled">
+                              Click to create single-dish meal
+                            </p>
+                          </div>
+                        </button>
+                      </form>
+                    </li>
+                  ),
+                )}
               </ul>
               {hasMoreDishMatches ? (
                 <div className="flex justify-center pt-4">
@@ -800,43 +813,45 @@ export default async function LikedMealsPage({
           ) : (
             <>
               <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
-                {visibleFoodMatches.map((food) => (
-                  <li key={food.id}>
-                    <form action={createSingleFoodMeal}>
-                      <input type="hidden" name="foodId" value={food.id} />
-                      <button
-                        type="submit"
-                        className="flex w-full flex-col items-center gap-3 rounded-base bg-neutral-primary-soft p-3 text-center hover:bg-neutral-primary"
-                      >
-                        <div className="h-56 w-56 overflow-hidden rounded-base bg-background">
-                          {food.image ? (
-                            <img
-                              src={food.image}
-                              alt={food.name}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center text-[10px] text-fg-disabled">
-                              No image
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-body">
-                            {food.name}
-                          </p>
-                          <p className="text-xs text-fg-disabled">
-                            {food.calories} kcal • P {food.protein} • C{" "}
-                            {food.carbohydrates} • F {food.fat}
-                          </p>
-                          <p className="mt-1 text-xs text-fg-disabled">
-                            Click to create single-food meal
-                          </p>
-                        </div>
-                      </button>
-                    </form>
-                  </li>
-                ))}
+                {visibleFoodMatches.map(
+                  (food: (typeof visibleFoodMatches)[number]) => (
+                    <li key={food.id}>
+                      <form action={createSingleFoodMeal}>
+                        <input type="hidden" name="foodId" value={food.id} />
+                        <button
+                          type="submit"
+                          className="flex w-full flex-col items-center gap-3 rounded-base bg-neutral-primary-soft p-3 text-center hover:bg-neutral-primary"
+                        >
+                          <div className="h-56 w-56 overflow-hidden rounded-base bg-background">
+                            {food.image ? (
+                              <img
+                                src={food.image}
+                                alt={food.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-[10px] text-fg-disabled">
+                                No image
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-body">
+                              {food.name}
+                            </p>
+                            <p className="text-xs text-fg-disabled">
+                              {food.calories} kcal • P {food.protein} • C{" "}
+                              {food.carbohydrates} • F {food.fat}
+                            </p>
+                            <p className="mt-1 text-xs text-fg-disabled">
+                              Click to create single-food meal
+                            </p>
+                          </div>
+                        </button>
+                      </form>
+                    </li>
+                  ),
+                )}
               </ul>
               {hasMoreFoodMatches ? (
                 <div className="flex justify-center pt-4">
