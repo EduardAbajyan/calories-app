@@ -447,7 +447,7 @@ export default async function MealsPage({
             <p className="text-sm text-foreground/60">No meals found.</p>
           ) : (
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {mealMatches.map((meal) => (
+              {mealMatches.map((meal: (typeof mealMatches)[number]) => (
                 <li
                   key={meal.id}
                   className="rounded-base bg-neutral-primary-soft p-3"
