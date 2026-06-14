@@ -127,67 +127,69 @@ export default async function LikedMealsPage({
       redirect("/liked-meals?error=Invalid%20meal");
     }
 
-    const mealNotFound = await prisma.$transaction(async (tx) => {
-      const mealExists = await tx.meal.findUnique({
-        where: { id: mealId },
-        select: { id: true },
-      });
+    const mealNotFound = await prisma.$transaction(
+      async (tx: TransactionClient) => {
+        const mealExists = await tx.meal.findUnique({
+          where: { id: mealId },
+          select: { id: true },
+        });
 
-      if (!mealExists) {
-        return true;
-      }
+        if (!mealExists) {
+          return true;
+        }
 
-      const existingBelovedMeal = await tx.usersBelovedMeals.findUnique({
-        where: {
-          userId_mealId: {
-            userId: activeSession.user.id,
-            mealId,
-          },
-        },
-        select: {
-          isLiked: true,
-        },
-      });
-
-      if (existingBelovedMeal?.isLiked) {
-        return false;
-      }
-
-      if (existingBelovedMeal) {
-        await tx.usersBelovedMeals.update({
+        const existingBelovedMeal = await tx.usersBelovedMeals.findUnique({
           where: {
             userId_mealId: {
               userId: activeSession.user.id,
               mealId,
             },
           },
-          data: {
+          select: {
             isLiked: true,
           },
         });
-      } else {
-        await tx.usersBelovedMeals.create({
+
+        if (existingBelovedMeal?.isLiked) {
+          return false;
+        }
+
+        if (existingBelovedMeal) {
+          await tx.usersBelovedMeals.update({
+            where: {
+              userId_mealId: {
+                userId: activeSession.user.id,
+                mealId,
+              },
+            },
+            data: {
+              isLiked: true,
+            },
+          });
+        } else {
+          await tx.usersBelovedMeals.create({
+            data: {
+              userId: activeSession.user.id,
+              mealId,
+              isLiked: true,
+            },
+          });
+        }
+
+        await tx.meal.update({
+          where: {
+            id: mealId,
+          },
           data: {
-            userId: activeSession.user.id,
-            mealId,
-            isLiked: true,
+            likes: {
+              increment: 1,
+            },
           },
         });
-      }
 
-      await tx.meal.update({
-        where: {
-          id: mealId,
-        },
-        data: {
-          likes: {
-            increment: 1,
-          },
-        },
-      });
-
-      return false;
-    });
+        return false;
+      },
+    );
 
     if (mealNotFound) {
       redirect("/liked-meals?error=Meal%20not%20found");
