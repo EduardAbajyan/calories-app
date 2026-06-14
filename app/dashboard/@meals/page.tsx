@@ -255,7 +255,7 @@ export default async function MealsPage({
 
     await prisma.$transaction(async (tx: TransactionClient) => {
       await tx.dailyLog.createMany({
-        data: meal.dishes.map((dish) => ({
+        data: meal.dishes.map((dish: { dishId: number }) => ({
           use_day_id: userDay.id,
           dishId: dish.dishId,
           amount: 1,
