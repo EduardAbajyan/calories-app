@@ -15,6 +15,10 @@ type MealsSearchParams = {
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+type TransactionClient = Parameters<
+  Extract<Parameters<typeof prisma.$transaction>[0], (arg: any) => any>
+>[0];
+
 function getDayNumberFromDate(date: Date): number {
   return Math.floor(date.getTime() / MS_PER_DAY);
 }
@@ -249,7 +253,7 @@ export default async function MealsPage({
     const dayStart = getUTCStartOfDay(0);
     const userDay = await getOrCreateUserDay(activeSession.user.id, dayStart);
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: TransactionClient) => {
       await tx.dailyLog.createMany({
         data: meal.dishes.map((dish) => ({
           use_day_id: userDay.id,
