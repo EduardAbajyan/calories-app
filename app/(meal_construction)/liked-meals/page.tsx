@@ -362,7 +362,7 @@ export default async function LikedMealsPage({
     },
   });
 
-  const likedMealIds = likedMeals.map((row) => row.mealId);
+  const likedMealIds = likedMeals.map((row: { mealId: number }) => row.mealId);
 
   const unconfirmedMeals = await prisma.meal.findMany({
     where: {
