@@ -294,7 +294,7 @@ export default async function LikedMealsPage({
     });
 
     const existingSingleFoodDish = existingDishes.find(
-      (candidate) =>
+      (candidate: { ingredients: { foodId: number; amount: number }[] }) =>
         candidate.ingredients.length === 1 &&
         candidate.ingredients[0].foodId === food.id &&
         candidate.ingredients[0].amount === 1,
