@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
@@ -66,7 +67,7 @@ export default async function LikedMealsPage({
       redirect("/liked-meals?error=Invalid%20meal");
     }
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const existingBelovedMeal = await tx.usersBelovedMeals.findUnique({
         where: {
           userId_mealId: {
