@@ -104,7 +104,7 @@ export default async function AddMealPage({
           name,
           image,
           dishes: {
-            create: selectedDishes.map((dish) => ({
+            create: selectedDishes.map((dish: { id: number }) => ({
               dish: {
                 connect: {
                   id: dish.id,

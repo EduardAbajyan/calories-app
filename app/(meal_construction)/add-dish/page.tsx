@@ -124,14 +124,16 @@ export default async function AddDishPage({
           image,
           path: recipe || null,
           ingredients: {
-            create: parsedIngredients.map((ingredient) => ({
-              food: {
-                connect: {
-                  id: ingredient.foodId,
+            create: parsedIngredients.map(
+              (ingredient: { foodId: number; amount: number }) => ({
+                food: {
+                  connect: {
+                    id: ingredient.foodId,
+                  },
                 },
-              },
-              amount: ingredient.amount,
-            })),
+                amount: ingredient.amount,
+              }),
+            ),
           },
         },
       });
