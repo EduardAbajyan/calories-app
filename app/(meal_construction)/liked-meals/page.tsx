@@ -1,5 +1,4 @@
 import Link from "next/link";
-import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
@@ -19,6 +18,10 @@ type LikedMealsSearchParams = {
 };
 
 const PAGE_SIZE = 9;
+
+type TransactionClient = Parameters<
+  Extract<Parameters<typeof prisma.$transaction>[0], (arg: any) => any>
+>[0];
 
 function parseLimit(value: string | undefined) {
   const parsed = Number(value);
@@ -67,7 +70,7 @@ export default async function LikedMealsPage({
       redirect("/liked-meals?error=Invalid%20meal");
     }
 
-    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    await prisma.$transaction(async (tx: TransactionClient) => {
       const existingBelovedMeal = await tx.usersBelovedMeals.findUnique({
         where: {
           userId_mealId: {
