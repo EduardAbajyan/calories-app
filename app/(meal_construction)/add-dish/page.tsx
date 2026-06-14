@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import ImageFileInput from "@/components/image-file-input";
 import DishFoodsBuilder from "@/components/dish-foods-builder";
+import TemporalMessage from "../../../components/temporal-message";
 
 type AddDishSearchParams = {
   success?: string;
@@ -171,7 +172,8 @@ export default async function AddDishPage({
               Add dish
             </h1>
             <p className="mt-2 max-w-lg text-sm leading-6 text-foreground/70">
-              Create a dish, add its recipe, and build it from foods you have already logged.
+              Create a dish, add its recipe, and build it from foods you have
+              already logged.
             </p>
           </div>
 
@@ -184,20 +186,25 @@ export default async function AddDishPage({
         </div>
 
         {isSuccess ? (
-          <p className="rounded-2xl border border-success/20 bg-success-soft px-4 py-3 text-sm font-medium text-success shadow-sm">
-            Dish added successfully.
-          </p>
+          <TemporalMessage
+            className="rounded-2xl border border-success/20 bg-success-soft px-4 py-3 text-sm font-medium text-success shadow-sm"
+            message="Dish added successfully."
+          />
         ) : null}
 
         {error ? (
-          <p className="rounded-2xl border border-danger/20 bg-danger-soft px-4 py-3 text-sm font-medium text-danger shadow-sm">
-            {error}
-          </p>
+          <TemporalMessage
+            className="rounded-2xl border border-danger/20 bg-danger-soft px-4 py-3 text-sm font-medium text-danger shadow-sm"
+            message={error}
+          />
         ) : null}
 
         <form action={addDish} className="flex flex-col gap-5">
           <div className="space-y-2">
-            <label htmlFor="name" className="block text-sm font-medium text-foreground">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-foreground"
+            >
               Dish name
             </label>
             <input
@@ -213,7 +220,10 @@ export default async function AddDishPage({
           <ImageFileInput />
 
           <div className="space-y-2">
-            <label htmlFor="recipe" className="block text-sm font-medium text-foreground">
+            <label
+              htmlFor="recipe"
+              className="block text-sm font-medium text-foreground"
+            >
               Recipe
             </label>
             <textarea

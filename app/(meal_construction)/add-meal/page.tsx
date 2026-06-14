@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import ImageFileInput from "@/components/image-file-input";
 import MealDishesBuilder from "@/components/meal-dishes-builder";
+import TemporalMessage from "../../../components/temporal-message";
 
 type AddMealSearchParams = {
   success?: string;
@@ -150,7 +151,8 @@ export default async function AddMealPage({
               Add meal
             </h1>
             <p className="mt-2 max-w-lg text-sm leading-6 text-foreground/70">
-              Group dishes together into a meal and attach an optional image and description.
+              Group dishes together into a meal and attach an optional image and
+              description.
             </p>
           </div>
 
@@ -163,20 +165,25 @@ export default async function AddMealPage({
         </div>
 
         {isSuccess ? (
-          <p className="rounded-2xl border border-success/20 bg-success-soft px-4 py-3 text-sm font-medium text-success shadow-sm">
-            Meal added successfully.
-          </p>
+          <TemporalMessage
+            className="rounded-2xl border border-success/20 bg-success-soft px-4 py-3 text-sm font-medium text-success shadow-sm"
+            message="Meal added successfully."
+          />
         ) : null}
 
         {error ? (
-          <p className="rounded-2xl border border-danger/20 bg-danger-soft px-4 py-3 text-sm font-medium text-danger shadow-sm">
-            {error}
-          </p>
+          <TemporalMessage
+            className="rounded-2xl border border-danger/20 bg-danger-soft px-4 py-3 text-sm font-medium text-danger shadow-sm"
+            message={error}
+          />
         ) : null}
 
         <form action={addMeal} className="flex flex-col gap-5">
           <div className="space-y-2">
-            <label htmlFor="name" className="block text-sm font-medium text-foreground">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-foreground"
+            >
               Meal name
             </label>
             <input

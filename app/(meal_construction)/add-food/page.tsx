@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import ImageFileInput from "@/components/image-file-input";
+import TemporalMessage from "../../../components/temporal-message";
 import cloudinary from "@/cludinary";
 
 type AddFoodSearchParams = {
@@ -155,15 +156,17 @@ export default async function AddFoodPage({
         </div>
 
         {isSuccess ? (
-          <p className="rounded-2xl border border-success/20 bg-success-soft px-4 py-3 text-sm font-medium text-success shadow-sm">
-            Food added successfully.
-          </p>
+          <TemporalMessage
+            className="rounded-2xl border border-success/20 bg-success-soft px-4 py-3 text-sm font-medium text-success shadow-sm"
+            message="Food added successfully."
+          />
         ) : null}
 
         {error ? (
-          <p className="rounded-2xl border border-danger/20 bg-danger-soft px-4 py-3 text-sm font-medium text-danger shadow-sm">
-            {error}
-          </p>
+          <TemporalMessage
+            className="rounded-2xl border border-danger/20 bg-danger-soft px-4 py-3 text-sm font-medium text-danger shadow-sm"
+            message={error}
+          />
         ) : null}
 
         <form action={addFood} className="flex flex-col gap-5">

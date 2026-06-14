@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { mainModule } from "process";
+import TemporalMessage from "../../../components/temporal-message";
 
 type LikedMealsSearchParams = {
   dishQ?: string;
@@ -461,21 +462,25 @@ export default async function LikedMealsPage({
         </div>
 
         {success ? (
-          <p className="rounded-base border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
-            {success === "dish"
-              ? "Meal created from dish."
-              : success === "food"
-                ? "Meal created from food."
-                : success === "liked"
-                  ? "Meal liked."
-                  : "Meal unliked."}
-          </p>
+          <TemporalMessage
+            className="rounded-base border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700"
+            message={
+              success === "dish"
+                ? "Meal created from dish."
+                : success === "food"
+                  ? "Meal created from food."
+                  : success === "liked"
+                    ? "Meal liked."
+                    : "Meal unliked."
+            }
+          />
         ) : null}
 
         {error ? (
-          <p className="rounded-base border border-default bg-background px-3 py-2 text-sm text-red-600">
-            {error}
-          </p>
+          <TemporalMessage
+            className="rounded-base border border-default bg-background px-3 py-2 text-sm text-red-600"
+            message={error}
+          />
         ) : null}
 
         <div className="space-y-3 p-4">
