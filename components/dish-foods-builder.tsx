@@ -258,8 +258,25 @@ export default function DishFoodsBuilder({
                       {food.name}
                     </p>
                     <p className="text-xs text-foreground/60">
-                      {food.calories} kcal • P {food.protein / 10} • C{" "}
-                      {food.carbohydrates / 10} • F {food.fat / 10}
+                      {(
+                        food.calories *
+                        (Number(selectedFood.amount) / 100)
+                      ).toFixed(0)}{" "}
+                      kcal • P{" "}
+                      {(
+                        food.protein *
+                        (Number(selectedFood.amount) / 1000)
+                      ).toFixed(1)}{" "}
+                      • C{" "}
+                      {(
+                        food.carbohydrates *
+                        (Number(selectedFood.amount) / 1000)
+                      ).toFixed(1)}{" "}
+                      • F{" "}
+                      {(
+                        food.fat *
+                        (Number(selectedFood.amount) / 1000)
+                      ).toFixed(1)}
                     </p>
                   </div>
 
