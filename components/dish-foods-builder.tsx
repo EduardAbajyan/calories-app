@@ -217,9 +217,9 @@ export default function DishFoodsBuilder({
             </p>
             <p className="mt-1">
               {dishTotals.calories.toFixed(0)} kcal • P{" "}
-              {dishTotals.protein.toFixed(1)} • C{" "}
-              {dishTotals.carbohydrates.toFixed(1)} • F{" "}
-              {dishTotals.fat.toFixed(1)}
+              {(dishTotals.protein / 10).toFixed(1)} • C{" "}
+              {(dishTotals.carbohydrates / 10).toFixed(1)} • F{" "}
+              {(dishTotals.fat / 10).toFixed(1)}
             </p>
           </div>
         ) : null}
