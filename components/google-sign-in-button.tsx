@@ -8,10 +8,10 @@ export default function SignInButton() {
   }
 
   return (
-    <div className="w-full flex flex-col items-center gap-4">
+    <div className="w-full px-5 flex flex-col items-center gap-4">
       <button
         onClick={handleSignIn}
-        className="w-full max-w-[400px] flex items-center gap-2 px-4 py-3 border rounded-md bg-[transparten] hover:bg-[#34A853]/15 transition"
+        className="w-full max-w-100 flex items-center justify-center gap-2 p-5 border rounded-lg bg-transparent hover:bg-[#34A853]/15 transition"
       >
         <img
           src="https://authjs.dev/img/providers/google.svg"
