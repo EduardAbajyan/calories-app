@@ -24,6 +24,7 @@ export default function DishFoodsBuilder({
 }) {
   const [selectedFoods, setSelectedFoods] = useState<SelectedFood[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [visibleCount, setVisibleCount] = useState(20);
 
   const transformedFoods = useMemo(
     () =>
@@ -52,6 +53,11 @@ export default function DishFoodsBuilder({
       food.name.toLowerCase().includes(normalizedSearch),
     );
   }, [transformedFoods, searchTerm]);
+
+  const visibleFoods = useMemo(
+    () => filteredFoods.slice(0, visibleCount),
+    [filteredFoods, visibleCount],
+  );
 
   const dishTotals = useMemo(() => {
     return selectedFoods.reduce(
@@ -142,7 +148,10 @@ export default function DishFoodsBuilder({
           id="food-search"
           type="search"
           value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
+          onChange={(event) => {
+            setSearchTerm(event.target.value);
+            setVisibleCount(20);
+          }}
           placeholder="Search by food name"
           className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-foreground/35 focus:border-accent focus:ring-4 focus:ring-accent-soft"
         />
@@ -155,7 +164,7 @@ export default function DishFoodsBuilder({
           </p>
         ) : null}
 
-        {filteredFoods.map((food) => {
+        {visibleFoods.map((food) => {
           const isSelected = selectedFoodIds.has(food.id);
 
           return (
@@ -204,6 +213,18 @@ export default function DishFoodsBuilder({
           );
         })}
       </div>
+
+      {filteredFoods.length > visibleCount ? (
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={() => setVisibleCount((prev) => prev + 10)}
+            className="inline-flex items-center rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground shadow-sm transition hover:border-accent hover:text-accent"
+          >
+            Load more
+          </button>
+        </div>
+      ) : null}
 
       <div className="space-y-2 rounded-2xl border border-border bg-surface p-4 shadow-sm">
         <p className="text-sm font-medium text-foreground">

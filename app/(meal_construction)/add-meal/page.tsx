@@ -140,7 +140,9 @@ export default async function AddMealPage({
     }
 
     if (parsedDishes.length === 0 || hasInvalidDish) {
-      redirect("/add-meal?error=Please%20select%20valid%20dishes");
+      redirect(
+        "/add-meal?error=Please%20select%20dishes%20with%20valid%20amounts",
+      );
     }
 
     const selectedDishes = await prisma.dish.findMany({
@@ -165,9 +167,9 @@ export default async function AddMealPage({
         redirect("/add-meal?error=Please%20upload%20a%20valid%20image");
       }
 
-      const maxImageSizeBytes = 2 * 1024 * 1024;
+      const maxImageSizeBytes = 5 * 1024 * 1024;
       if (imageInput.size > maxImageSizeBytes) {
-        redirect("/add-meal?error=Image%20must%20be%202MB%20or%20smaller");
+        redirect("/add-meal?error=Image%20must%20be%205MB%20or%20smaller");
       }
 
       const imageBuffer = Buffer.from(await imageInput.arrayBuffer());
