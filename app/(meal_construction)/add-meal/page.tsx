@@ -29,15 +29,79 @@ export default async function AddMealPage({
   const params = await searchParams;
   const isSuccess = params.success === "1";
   const error = params.error;
-  const availableDishes = await prisma.dish.findMany({
+  const availableDishesFromDb = await prisma.dish.findMany({
     select: {
       id: true,
       name: true,
       image: true,
+      ingredients: {
+        select: {
+          amount: true,
+          food: {
+            select: {
+              calories: true,
+              protein: true,
+              carbohydrates: true,
+              fat: true,
+            },
+          },
+        },
+      },
     },
     orderBy: {
       name: "asc",
     },
+  });
+
+  const availableDishes = availableDishesFromDb.map((dish) => {
+    const totalDishWeight = dish.ingredients.reduce(
+      (sum, ingredient) => sum + ingredient.amount,
+      0,
+    );
+
+    if (totalDishWeight <= 0) {
+      return {
+        id: dish.id,
+        name: dish.name,
+        image: dish.image,
+        calories: 0,
+        protein: 0,
+        carbohydrates: 0,
+        fat: 0,
+      };
+    }
+
+    const totals = dish.ingredients.reduce(
+      (sum, ingredient) => {
+        const factor = ingredient.amount / 100;
+
+        return {
+          calories: sum.calories + ingredient.food.calories * factor,
+          protein: sum.protein + (ingredient.food.protein / 10) * factor,
+          carbohydrates:
+            sum.carbohydrates + (ingredient.food.carbohydrates / 10) * factor,
+          fat: sum.fat + (ingredient.food.fat / 10) * factor,
+        };
+      },
+      {
+        calories: 0,
+        protein: 0,
+        carbohydrates: 0,
+        fat: 0,
+      },
+    );
+
+    const perHundredFactor = 100 / totalDishWeight;
+
+    return {
+      id: dish.id,
+      name: dish.name,
+      image: dish.image,
+      calories: totals.calories * perHundredFactor,
+      protein: totals.protein * perHundredFactor,
+      carbohydrates: totals.carbohydrates * perHundredFactor,
+      fat: totals.fat * perHundredFactor,
+    };
   });
 
   async function addMeal(formData: FormData) {
@@ -52,31 +116,34 @@ export default async function AddMealPage({
     const imageInput = formData.get("image");
     const dishIdsFromForm = formData.getAll("dishIds");
     let image: string | null = null;
-    const parsedDishIds = dishIdsFromForm
-      .map((value) => Number(value))
-      .filter((value) => Number.isInteger(value) && value > 0);
+    const parsedDishIds = dishIdsFromForm.map((dishIdValue) =>
+      Number(dishIdValue),
+    );
+
+    const hasInvalidDish = parsedDishIds.some(
+      (dishId) => !Number.isInteger(dishId) || dishId <= 0,
+    );
 
     const uniqueDishIds = Array.from(new Set(parsedDishIds));
-    const selectedDishes = uniqueDishIds.length
-      ? await prisma.dish.findMany({
-          where: {
-            id: {
-              in: uniqueDishIds,
-            },
-          },
-          select: {
-            id: true,
-          },
-        })
-      : [];
 
     if (!name) {
       redirect("/add-meal?error=Meal%20name%20is%20required");
     }
 
-    if (uniqueDishIds.length === 0) {
-      redirect("/add-meal?error=Please%20select%20at%20least%20one%20dish");
+    if (parsedDishIds.length === 0 || hasInvalidDish) {
+      redirect("/add-meal?error=Please%20select%20valid%20dishes");
     }
+
+    const selectedDishes = await prisma.dish.findMany({
+      where: {
+        id: {
+          in: uniqueDishIds,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
 
     if (selectedDishes.length !== uniqueDishIds.length) {
       redirect(
@@ -151,8 +218,7 @@ export default async function AddMealPage({
               Add meal
             </h1>
             <p className="mt-2 max-w-lg text-sm leading-6 text-foreground/70">
-              Group dishes together into a meal and attach an optional image and
-              description.
+              Create a meal and build it from dishes you have already added.
             </p>
           </div>
 
@@ -191,7 +257,7 @@ export default async function AddMealPage({
               name="name"
               type="text"
               required
-              placeholder="For example: Chicken bowl"
+              placeholder="For example: Post-workout combo"
               className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-foreground shadow-sm outline-none transition placeholder:text-foreground/35 focus:border-accent focus:ring-4 focus:ring-accent-soft"
             />
           </div>

@@ -3,9 +3,13 @@
 import { useMemo, useState } from "react";
 
 type DishOption = {
-	id: number;
-	name: string;
-	image: string | null;
+  id: number;
+  name: string;
+  image: string | null;
+  calories: number;
+  protein: number;
+  carbohydrates: number;
+  fat: number;
 };
 
 type SelectedDish = {
@@ -83,43 +87,51 @@ export default function MealDishesBuilder({
 							const isSelected = selectedDishIds.has(dish.id);
 
 							return (
-								<button
-									key={dish.id}
-									type="button"
-									onClick={() => toggleDish(dish.id)}
-									className={`w-full rounded-base border px-3 py-2 text-left text-sm transition-colors ${
-										isSelected
-											? "border-accent bg-accent-soft"
-											: "border-border bg-surface hover:border-accent"
-									}`}
-									aria-pressed={isSelected}
-								>
-									<div className="flex items-center gap-3">
-										<div className="h-12 w-12 shrink-0 overflow-hidden rounded-base border border-border bg-surface-elevated">
-											{dish.image ? (
-												<img
-													src={dish.image}
-													alt={dish.name}
-													className="h-full w-full object-cover"
-												/>
-											) : (
-												<div className="flex h-full w-full items-center justify-center text-[10px] text-foreground/50">
-													No image
-												</div>
-											)}
-										</div>
+                <button
+                  key={dish.id}
+                  type="button"
+                  onClick={() => toggleDish(dish.id)}
+                  className={`w-full rounded-base border px-3 py-2 text-left text-sm transition-colors ${
+                    isSelected
+                      ? "border-accent bg-accent-soft"
+                      : "border-border bg-surface hover:border-accent"
+                  }`}
+                  aria-pressed={isSelected}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-base border border-border bg-surface-elevated">
+                      {dish.image ? (
+                        <img
+                          src={dish.image}
+                          alt={dish.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[10px] text-foreground/50">
+                          No image
+                        </div>
+                      )}
+                    </div>
 
-										<div className="min-w-0 flex-1">
-											<div className="flex items-center justify-between gap-2">
-												<span className="truncate font-medium text-foreground">{dish.name}</span>
-												<span className="text-xs text-foreground/60">
-													{isSelected ? "Selected" : "Click to add"}
-												</span>
-											</div>
-										</div>
-									</div>
-								</button>
-							);
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate font-medium text-foreground">
+                          {dish.name}
+                        </span>
+                        <span className="text-xs text-foreground/60">
+                          {isSelected ? "Selected" : "Click to add"}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-foreground/60">
+                        {dish.calories.toFixed(0)} kcal • P{" "}
+                        {dish.protein.toFixed(1)} • C{" "}
+                        {dish.carbohydrates.toFixed(1)} • F{" "}
+                        {dish.fat.toFixed(1)}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              );
 						})}
 					</div>
 
@@ -137,33 +149,47 @@ export default function MealDishesBuilder({
 									}
 
 									return (
-										<div
-											key={selectedDish.dishId}
-											className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl border border-border px-3 py-2"
-										>
-											<div className="h-10 w-10 overflow-hidden rounded-base border border-border bg-surface-elevated">
-												{dish.image ? (
-													<img
-														src={dish.image}
-														alt={dish.name}
-														className="h-full w-full object-cover"
-													/>
-												) : null}
-											</div>
+                    <div
+                      key={selectedDish.dishId}
+                      className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl border border-border px-3 py-2"
+                    >
+                      <div className="h-10 w-10 overflow-hidden rounded-base border border-border bg-surface-elevated">
+                        {dish.image ? (
+                          <img
+                            src={dish.image}
+                            alt={dish.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : null}
+                      </div>
 
-											<p className="truncate text-sm text-foreground">{dish.name}</p>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm text-foreground">
+                          {dish.name}
+                        </p>
+                        <p className="text-xs text-foreground/60">
+                          {dish.calories.toFixed(0)} kcal • P{" "}
+                          {dish.protein.toFixed(1)} • C{" "}
+                          {dish.carbohydrates.toFixed(1)} • F{" "}
+                          {dish.fat.toFixed(1)}
+                        </p>
+                      </div>
 
-											<button
-												type="button"
-												onClick={() => toggleDish(selectedDish.dishId)}
-												className="rounded-base border border-border px-2 py-1 text-xs text-foreground hover:text-accent"
-											>
-												Remove
-											</button>
+                      <button
+                        type="button"
+                        onClick={() => toggleDish(selectedDish.dishId)}
+                        className="rounded-base border border-border px-2 py-1 text-xs text-foreground hover:text-accent"
+                      >
+                        Remove
+                      </button>
 
-											<input type="hidden" name="dishIds" value={selectedDish.dishId} />
-										</div>
-									);
+                      <input
+                        type="hidden"
+                        name="dishIds"
+                        value={selectedDish.dishId}
+                      />
+                    </div>
+                  );
 								})}
 							</div>
 						)}
