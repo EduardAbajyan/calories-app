@@ -13,7 +13,8 @@ type DishOption = {
 };
 
 type SelectedDish = {
-	dishId: number;
+  dishId: number;
+  amount: string;
 };
 
 export default function MealDishesBuilder({
@@ -48,9 +49,22 @@ export default function MealDishesBuilder({
 				return prev.filter((item) => item.dishId !== dishId);
 			}
 
-			return [...prev, { dishId }];
+			return [...prev, { dishId, amount: "100" }];
 		});
 	}
+
+	function updateAmount(dishId: number, amount: string) {
+    if (amount === "0") {
+      setSelectedDishes((prev) =>
+        prev.filter((item) => item.dishId !== dishId),
+      );
+      return;
+    }
+
+    setSelectedDishes((prev) =>
+      prev.map((item) => (item.dishId === dishId ? { ...item, amount } : item)),
+    );
+  }
 
 	return (
 		<div className="space-y-4 rounded-[28px] border border-border/70 bg-surface-elevated p-4 shadow-sm sm:p-5">
@@ -175,18 +189,33 @@ export default function MealDishesBuilder({
                         </p>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => toggleDish(selectedDish.dishId)}
-                        className="rounded-base border border-border px-2 py-1 text-xs text-foreground hover:text-accent"
-                      >
-                        Remove
-                      </button>
+                      <label className="flex items-center gap-2 text-sm text-foreground">
+                        Amount in grams:
+                        <input
+                          type="number"
+                          min={0}
+                          step={1}
+                          inputMode="numeric"
+                          value={selectedDish.amount}
+                          onChange={(event) =>
+                            updateAmount(
+                              selectedDish.dishId,
+                              event.target.value,
+                            )
+                          }
+                          className="w-20 rounded-2xl border border-border bg-surface-elevated px-2 py-1 text-sm text-foreground outline-none focus:border-accent focus:ring-4 focus:ring-accent-soft"
+                        />
+                      </label>
 
                       <input
                         type="hidden"
                         name="dishIds"
                         value={selectedDish.dishId}
+                      />
+                      <input
+                        type="hidden"
+                        name="amounts"
+                        value={selectedDish.amount}
                       />
                     </div>
                   );

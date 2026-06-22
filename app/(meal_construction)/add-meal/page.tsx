@@ -115,22 +115,31 @@ export default async function AddMealPage({
     const name = String(formData.get("name") ?? "").trim();
     const imageInput = formData.get("image");
     const dishIdsFromForm = formData.getAll("dishIds");
+    const amountsFromForm = formData.getAll("amounts");
     let image: string | null = null;
-    const parsedDishIds = dishIdsFromForm.map((dishIdValue) =>
-      Number(dishIdValue),
+
+    const parsedDishes = dishIdsFromForm.map((dishIdValue, index) => ({
+      dishId: Number(dishIdValue),
+      amount: Number(amountsFromForm[index] ?? ""),
+    }));
+
+    const hasInvalidDish = parsedDishes.some(
+      (dish) =>
+        !Number.isInteger(dish.dishId) ||
+        dish.dishId <= 0 ||
+        !Number.isInteger(dish.amount) ||
+        dish.amount <= 0,
     );
 
-    const hasInvalidDish = parsedDishIds.some(
-      (dishId) => !Number.isInteger(dishId) || dishId <= 0,
+    const uniqueDishIds = Array.from(
+      new Set(parsedDishes.map((dish) => dish.dishId)),
     );
-
-    const uniqueDishIds = Array.from(new Set(parsedDishIds));
 
     if (!name) {
       redirect("/add-meal?error=Meal%20name%20is%20required");
     }
 
-    if (parsedDishIds.length === 0 || hasInvalidDish) {
+    if (parsedDishes.length === 0 || hasInvalidDish) {
       redirect("/add-meal?error=Please%20select%20valid%20dishes");
     }
 
@@ -171,12 +180,13 @@ export default async function AddMealPage({
           name,
           image,
           dishes: {
-            create: selectedDishes.map((dish: { id: number }) => ({
+            create: parsedDishes.map((dish) => ({
               dish: {
                 connect: {
-                  id: dish.id,
+                  id: dish.dishId,
                 },
               },
+              amount: dish.amount,
             })),
           },
         },

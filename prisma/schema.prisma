@@ -109,6 +109,7 @@ model Meal {
 model MealDishes {
   mealId Int
   dishId Int
+  amount Int  @default(100) // Amount of the dish in grams
 
   meal   Meal @relation(fields: [mealId], references: [id], onDelete: Cascade)
   dish   Dish @relation(fields: [dishId], references: [id], onDelete: Cascade)
