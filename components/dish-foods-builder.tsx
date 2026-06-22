@@ -25,6 +25,17 @@ export default function DishFoodsBuilder({
   const [selectedFoods, setSelectedFoods] = useState<SelectedFood[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const transformedFoods = useMemo(
+    () =>
+      availableFoods.map((food) => ({
+        ...food,
+        protein: food.protein * 10,
+        carbohydrates: food.carbohydrates * 10,
+        fat: food.fat * 10,
+      })),
+    [availableFoods],
+  );
+
   const selectedFoodIds = useMemo(
     () => new Set(selectedFoods.map((food) => food.foodId)),
     [selectedFoods],
@@ -34,13 +45,46 @@ export default function DishFoodsBuilder({
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
     if (!normalizedSearch) {
-      return availableFoods;
+      return transformedFoods;
     }
 
-    return availableFoods.filter((food) =>
+    return transformedFoods.filter((food) =>
       food.name.toLowerCase().includes(normalizedSearch),
     );
-  }, [availableFoods, searchTerm]);
+  }, [transformedFoods, searchTerm]);
+
+  const dishTotals = useMemo(() => {
+    return selectedFoods.reduce(
+      (totals, selectedFood) => {
+        const food = transformedFoods.find(
+          (item) => item.id === selectedFood.foodId,
+        );
+        if (!food) {
+          return totals;
+        }
+
+        const amount = Number(selectedFood.amount);
+        if (!Number.isFinite(amount) || amount <= 0) {
+          return totals;
+        }
+
+        const factor = amount / 100;
+
+        return {
+          calories: totals.calories + food.calories * factor,
+          protein: totals.protein + food.protein * factor,
+          carbohydrates: totals.carbohydrates + food.carbohydrates * factor,
+          fat: totals.fat + food.fat * factor,
+        };
+      },
+      {
+        calories: 0,
+        protein: 0,
+        carbohydrates: 0,
+        fat: 0,
+      },
+    );
+  }, [selectedFoods, transformedFoods]);
 
   function toggleFood(foodId: number) {
     setSelectedFoods((prev) => {
@@ -48,7 +92,7 @@ export default function DishFoodsBuilder({
       if (isAlreadySelected) {
         return prev.filter((item) => item.foodId !== foodId);
       }
-      return [...prev, { foodId, amount: "1" }];
+      return [...prev, { foodId, amount: "100" }];
     });
   }
 
@@ -63,10 +107,12 @@ export default function DishFoodsBuilder({
     );
   }
 
-  if (availableFoods.length === 0) {
+  if (transformedFoods.length === 0) {
     return (
       <div>
-        <p className="mb-2 block text-sm font-medium text-foreground">Foods in this dish</p>
+        <p className="mb-2 block text-sm font-medium text-foreground">
+          Foods in this dish
+        </p>
         <p className="rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-foreground/60 shadow-sm">
           No foods found yet. Create foods first, then add them to a dish.
         </p>
@@ -77,12 +123,19 @@ export default function DishFoodsBuilder({
   return (
     <div className="space-y-4 rounded-[28px] border border-border/70 bg-surface-elevated p-4 shadow-sm sm:p-5">
       <div>
-        <p className="block text-sm font-medium text-foreground">Foods in this dish</p>
-        <p className="mt-1 text-xs text-foreground/60">Click a food to add it, then set the amount below.</p>
+        <p className="block text-sm font-medium text-foreground">
+          Foods in this dish
+        </p>
+        <p className="mt-1 text-xs text-foreground/60">
+          Click a food to add it, then set the amount below.
+        </p>
       </div>
 
       <div>
-        <label htmlFor="food-search" className="mb-1 block text-xs font-semibold uppercase tracking-[0.18em] text-accent">
+        <label
+          htmlFor="food-search"
+          className="mb-1 block text-xs font-semibold uppercase tracking-[0.18em] text-accent"
+        >
           Search foods
         </label>
         <input
@@ -97,7 +150,9 @@ export default function DishFoodsBuilder({
 
       <div className="max-h-64 space-y-2 overflow-y-auto rounded-2xl border border-border bg-surface p-2 shadow-sm">
         {filteredFoods.length === 0 ? (
-          <p className="px-2 py-3 text-sm text-foreground/60">No foods match your search.</p>
+          <p className="px-2 py-3 text-sm text-foreground/60">
+            No foods match your search.
+          </p>
         ) : null}
 
         {filteredFoods.map((food) => {
@@ -132,13 +187,16 @@ export default function DishFoodsBuilder({
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="truncate font-medium text-foreground">{food.name}</span>
+                    <span className="truncate font-medium text-foreground">
+                      {food.name}
+                    </span>
                     <span className="text-xs text-foreground/60">
                       {isSelected ? "Selected" : "Click to add"}
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-foreground/60">
-                    {food.calories} kcal • P {food.protein} • C {food.carbohydrates} • F {food.fat}
+                    {food.calories} kcal • P {food.protein} • C{" "}
+                    {food.carbohydrates} • F {food.fat}
                   </p>
                 </div>
               </div>
@@ -148,14 +206,34 @@ export default function DishFoodsBuilder({
       </div>
 
       <div className="space-y-2 rounded-2xl border border-border bg-surface p-4 shadow-sm">
-        <p className="text-sm font-medium text-foreground">Selected foods and amounts</p>
+        <p className="text-sm font-medium text-foreground">
+          Selected foods and amounts
+        </p>
+
+        {selectedFoods.length > 0 ? (
+          <div className="rounded-2xl border border-accent/25 bg-accent-soft/40 px-4 py-3 text-sm text-foreground">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
+              Dish totals
+            </p>
+            <p className="mt-1">
+              {dishTotals.calories.toFixed(0)} kcal • P{" "}
+              {dishTotals.protein.toFixed(1)} • C{" "}
+              {dishTotals.carbohydrates.toFixed(1)} • F{" "}
+              {dishTotals.fat.toFixed(1)}
+            </p>
+          </div>
+        ) : null}
 
         {selectedFoods.length === 0 ? (
-          <p className="text-sm text-foreground/60">Select one or more foods above.</p>
+          <p className="text-sm text-foreground/60">
+            Select one or more foods above.
+          </p>
         ) : (
           <div className="space-y-2">
             {selectedFoods.map((selectedFood) => {
-              const food = availableFoods.find((item) => item.id === selectedFood.foodId);
+              const food = transformedFoods.find(
+                (item) => item.id === selectedFood.foodId,
+              );
               if (!food) {
                 return null;
               }
@@ -176,27 +254,40 @@ export default function DishFoodsBuilder({
                   </div>
 
                   <div className="min-w-0">
-                    <p className="truncate text-sm text-foreground">{food.name}</p>
+                    <p className="truncate text-sm text-foreground">
+                      {food.name}
+                    </p>
                     <p className="text-xs text-foreground/60">
-                      {food.calories} kcal • P {food.protein} • C {food.carbohydrates} • F {food.fat}
+                      {food.calories} kcal • P {food.protein} • C{" "}
+                      {food.carbohydrates} • F {food.fat}
                     </p>
                   </div>
 
                   <label className="flex items-center gap-2 text-sm text-foreground">
-                    Amount
+                    Amount in grams:
                     <input
                       type="number"
                       min={0}
                       step={1}
                       inputMode="numeric"
                       value={selectedFood.amount}
-                      onChange={(event) => updateAmount(selectedFood.foodId, event.target.value)}
+                      onChange={(event) =>
+                        updateAmount(selectedFood.foodId, event.target.value)
+                      }
                       className="w-20 rounded-2xl border border-border bg-surface-elevated px-2 py-1 text-sm text-foreground outline-none focus:border-accent focus:ring-4 focus:ring-accent-soft"
                     />
                   </label>
 
-                  <input type="hidden" name="foodIds" value={selectedFood.foodId} />
-                  <input type="hidden" name="amounts" value={selectedFood.amount} />
+                  <input
+                    type="hidden"
+                    name="foodIds"
+                    value={selectedFood.foodId}
+                  />
+                  <input
+                    type="hidden"
+                    name="amounts"
+                    value={selectedFood.amount}
+                  />
                 </div>
               );
             })}

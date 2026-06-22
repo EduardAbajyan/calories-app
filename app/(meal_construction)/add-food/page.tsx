@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -50,21 +49,10 @@ export default async function AddFoodPage({
       redirect("/add-food?error=Food%20name%20is%20required");
     }
 
-    const protein = Number(proteinRaw);
-    const carbohydrates = Number(carbohydratesRaw);
-    const fat = Number(fatRaw);
+    const protein = Number(proteinRaw) * 10;
+    const carbohydrates = Number(carbohydratesRaw) * 10;
+    const fat = Number(fatRaw) * 10;
     const calories = Number(caloriesRaw);
-
-    if (
-      !Number.isInteger(protein) ||
-      !Number.isInteger(carbohydrates) ||
-      !Number.isInteger(fat) ||
-      !Number.isInteger(calories)
-    ) {
-      redirect(
-        "/add-food?error=Macros%20and%20calories%20must%20be%20whole%20numbers",
-      );
-    }
 
     if (protein < 0 || carbohydrates < 0 || fat < 0 || calories < 0) {
       redirect(
@@ -201,7 +189,7 @@ export default async function AddFoodPage({
                 type="number"
                 required
                 min={0}
-                step={1}
+                step={0.1}
                 placeholder="0"
                 className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-foreground shadow-sm outline-none transition placeholder:text-foreground/35 focus:border-accent focus:ring-4 focus:ring-accent-soft"
               />
@@ -220,7 +208,7 @@ export default async function AddFoodPage({
                 type="number"
                 required
                 min={0}
-                step={1}
+                step={0.1}
                 placeholder="0"
                 className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-foreground shadow-sm outline-none transition placeholder:text-foreground/35 focus:border-accent focus:ring-4 focus:ring-accent-soft"
               />
@@ -239,7 +227,7 @@ export default async function AddFoodPage({
                 type="number"
                 required
                 min={0}
-                step={1}
+                step={0.1}
                 placeholder="0"
                 className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-foreground shadow-sm outline-none transition placeholder:text-foreground/35 focus:border-accent focus:ring-4 focus:ring-accent-soft"
               />
