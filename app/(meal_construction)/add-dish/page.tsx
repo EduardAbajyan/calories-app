@@ -108,9 +108,9 @@ export default async function AddDishPage({
         redirect("/add-dish?error=Please%20upload%20a%20valid%20image");
       }
 
-      const maxImageSizeBytes = 2 * 1024 * 1024;
+      const maxImageSizeBytes = 5 * 1024 * 1024;
       if (imageInput.size > maxImageSizeBytes) {
-        redirect("/add-dish?error=Image%20must%20be%202MB%20or%20smaller");
+        redirect("/add-dish?error=Image%20must%20be%205MB%20or%20smaller");
       }
 
       const imageBuffer = Buffer.from(await imageInput.arrayBuffer());

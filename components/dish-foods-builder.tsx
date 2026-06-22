@@ -29,9 +29,9 @@ export default function DishFoodsBuilder({
     () =>
       availableFoods.map((food) => ({
         ...food,
-        protein: food.protein * 10,
-        carbohydrates: food.carbohydrates * 10,
-        fat: food.fat * 10,
+        protein: food.protein,
+        carbohydrates: food.carbohydrates,
+        fat: food.fat,
       })),
     [availableFoods],
   );
@@ -195,8 +195,8 @@ export default function DishFoodsBuilder({
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-foreground/60">
-                    {food.calories} kcal • P {food.protein} • C{" "}
-                    {food.carbohydrates} • F {food.fat}
+                    {food.calories} kcal • P {food.protein / 10} • C{" "}
+                    {food.carbohydrates / 10} • F {food.fat / 10}
                   </p>
                 </div>
               </div>
@@ -258,8 +258,8 @@ export default function DishFoodsBuilder({
                       {food.name}
                     </p>
                     <p className="text-xs text-foreground/60">
-                      {food.calories} kcal • P {food.protein} • C{" "}
-                      {food.carbohydrates} • F {food.fat}
+                      {food.calories} kcal • P {food.protein / 10} • C{" "}
+                      {food.carbohydrates / 10} • F {food.fat / 10}
                     </p>
                   </div>
 
