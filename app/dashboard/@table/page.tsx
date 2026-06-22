@@ -167,7 +167,7 @@ export default function Table({
                   type="date"
                   name="date"
                   id="date"
-                  className="w-full rounded-2xl border border-border bg-surface-elevated px-4 py-3 text-center text-sm font-medium text-foreground shadow-sm outline-none transition focus:border-accent focus:ring-4 focus:ring-accent-soft"
+                  className="mx-auto block w-11/12 min-w-0 max-w-full appearance-none overflow-hidden rounded-2xl border border-border bg-surface-elevated px-4 py-3 text-center text-base font-medium text-foreground shadow-sm outline-none transition focus:border-accent focus:ring-4 focus:ring-accent-soft sm:w-full sm:text-sm"
                   min={minDate}
                   max={maxDate}
                   value={selectedDate}
