@@ -3,8 +3,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { mainModule } from "process";
 import TemporalMessage from "../../../components/temporal-message";
+import PendingActionButton from "@/components/pending-action-button";
 
 type LikedMealsSearchParams = {
   dishQ?: string;
@@ -13,7 +13,6 @@ type LikedMealsSearchParams = {
   otherLimit?: string;
   dishLimit?: string;
   foodLimit?: string;
-  success?: string;
   error?: string;
 };
 
@@ -54,7 +53,6 @@ export default async function LikedMealsPage({
   const otherLimit = parseLimit(params.otherLimit);
   const dishLimit = parseLimit(params.dishLimit);
   const foodLimit = parseLimit(params.foodLimit);
-  const success = params.success;
   const error = params.error;
 
   async function unlikeMeal(formData: FormData) {
@@ -111,7 +109,7 @@ export default async function LikedMealsPage({
     });
 
     revalidatePath("/liked-meals");
-    redirect("/liked-meals?success=unliked");
+    redirect("/liked-meals");
   }
 
   async function likeMeal(formData: FormData) {
@@ -196,7 +194,7 @@ export default async function LikedMealsPage({
     }
 
     revalidatePath("/liked-meals");
-    redirect("/liked-meals?success=liked");
+    redirect("/liked-meals");
   }
 
   async function createSingleDishMeal(formData: FormData) {
@@ -242,7 +240,7 @@ export default async function LikedMealsPage({
     });
 
     revalidatePath("/liked-meals");
-    redirect("/liked-meals?success=dish");
+    redirect("/liked-meals");
   }
 
   async function createSingleFoodMeal(formData: FormData) {
@@ -341,7 +339,7 @@ export default async function LikedMealsPage({
     });
 
     revalidatePath("/liked-meals");
-    redirect("/liked-meals?success=food");
+    redirect("/liked-meals");
   }
 
   const likedMeals = await prisma.usersBelovedMeals.findMany({
@@ -467,21 +465,6 @@ export default async function LikedMealsPage({
           </Link>
         </div>
 
-        {success ? (
-          <TemporalMessage
-            className="rounded-base border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700"
-            message={
-              success === "dish"
-                ? "Meal created from dish."
-                : success === "food"
-                  ? "Meal created from food."
-                  : success === "liked"
-                    ? "Meal liked."
-                    : "Meal unliked."
-            }
-          />
-        ) : null}
-
         {error ? (
           <TemporalMessage
             className="rounded-base border border-default bg-background px-3 py-2 text-sm text-red-600"
@@ -538,9 +521,9 @@ export default async function LikedMealsPage({
                               name="mealId"
                               value={row.meal.id}
                             />
-                            <button
-                              type="submit"
+                            <PendingActionButton
                               className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-linear-to-r from-slate-100 to-zinc-200 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1"
+                              pendingChildren="Updating..."
                             >
                               <svg
                                 className="h-3.5 w-3.5"
@@ -551,7 +534,7 @@ export default async function LikedMealsPage({
                                 <path d="M5 5.7a1 1 0 0 1 1.4 0L10 9.3l3.6-3.6a1 1 0 1 1 1.4 1.4L11.4 10.7l3.6 3.6a1 1 0 0 1-1.4 1.4L10 12.1l-3.6 3.6a1 1 0 0 1-1.4-1.4l3.6-3.6-3.6-3.6a1 1 0 0 1 0-1.4z" />
                               </svg>
                               Unlike
-                            </button>
+                            </PendingActionButton>
                           </form>
                         </div>
                       </div>
@@ -624,9 +607,9 @@ export default async function LikedMealsPage({
                               name="mealId"
                               value={meal.id}
                             />
-                            <button
-                              type="submit"
+                            <PendingActionButton
                               className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-linear-to-r from-amber-200 via-orange-200 to-rose-200 px-3 py-1.5 text-xs font-semibold text-amber-900 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1"
+                              pendingChildren="Updating..."
                             >
                               <svg
                                 className="h-3.5 w-3.5"
@@ -637,7 +620,7 @@ export default async function LikedMealsPage({
                                 <path d="M10 17.5l-1.2-1.1C4.6 12.5 2 10.1 2 7.1 2 4.7 3.9 2.8 6.3 2.8c1.4 0 2.8.7 3.7 1.8.9-1.1 2.3-1.8 3.7-1.8 2.4 0 4.3 1.9 4.3 4.3 0 3-2.6 5.4-6.8 9.3L10 17.5z" />
                               </svg>
                               Like
-                            </button>
+                            </PendingActionButton>
                           </form>
                         </div>
                       </div>
@@ -716,9 +699,13 @@ export default async function LikedMealsPage({
                     <li key={dish.id}>
                       <form action={createSingleDishMeal}>
                         <input type="hidden" name="dishId" value={dish.id} />
-                        <button
-                          type="submit"
+                        <PendingActionButton
                           className="flex w-full flex-col items-center gap-3 rounded-base bg-neutral-primary-soft p-3 text-center hover:bg-neutral-primary"
+                          pendingChildren={
+                            <span className="text-sm font-semibold text-body">
+                              Creating meal...
+                            </span>
+                          }
                         >
                           <div className="h-56 w-56 overflow-hidden rounded-base bg-background">
                             {dish.image ? (
@@ -741,7 +728,7 @@ export default async function LikedMealsPage({
                               Click to create single-dish meal
                             </p>
                           </div>
-                        </button>
+                        </PendingActionButton>
                       </form>
                     </li>
                   ),
@@ -818,9 +805,13 @@ export default async function LikedMealsPage({
                     <li key={food.id}>
                       <form action={createSingleFoodMeal}>
                         <input type="hidden" name="foodId" value={food.id} />
-                        <button
-                          type="submit"
+                        <PendingActionButton
                           className="flex w-full flex-col items-center gap-3 rounded-base bg-neutral-primary-soft p-3 text-center hover:bg-neutral-primary"
+                          pendingChildren={
+                            <span className="text-sm font-semibold text-body">
+                              Creating meal...
+                            </span>
+                          }
                         >
                           <div className="h-56 w-56 overflow-hidden rounded-base bg-background">
                             {food.image ? (
@@ -847,7 +838,7 @@ export default async function LikedMealsPage({
                               Click to create single-food meal
                             </p>
                           </div>
-                        </button>
+                        </PendingActionButton>
                       </form>
                     </li>
                   ),
