@@ -107,6 +107,14 @@ function buildDashboardHref(
   return query ? `${basePath}?${query}` : basePath;
 }
 
+function revalidateDashboardTable(dayOffset: number) {
+  revalidatePath("/dashboard", "layout");
+
+  if (dayOffset > 0) {
+    revalidatePath(`/dashboard/${dayOffset}`, "layout");
+  }
+}
+
 export default async function MealsPage({
   params,
   searchParams,
@@ -170,7 +178,7 @@ export default async function MealsPage({
       },
     });
 
-    revalidatePath("/dashboard");
+    revalidateDashboardTable(dayOffset);
     redirect(
       buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
         success: "food",
@@ -227,7 +235,7 @@ export default async function MealsPage({
       },
     });
 
-    revalidatePath("/dashboard");
+    revalidateDashboardTable(dayOffset);
     redirect(
       buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
         success: "dish",
@@ -314,7 +322,7 @@ export default async function MealsPage({
       }
     });
 
-    revalidatePath("/dashboard");
+    revalidateDashboardTable(dayOffset);
     redirect(
       buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
         success: "meal",
