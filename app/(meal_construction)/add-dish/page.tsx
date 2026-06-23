@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import ImageFileInput from "@/components/image-file-input";
+import FormSubmitButton from "@/components/form-submit-button";
 import DishFoodsBuilder from "@/components/dish-foods-builder";
 import TemporalMessage from "../../../components/temporal-message";
 
@@ -240,12 +241,11 @@ export default async function AddDishPage({
           <DishFoodsBuilder availableFoods={availableFoods} />
 
           <div className="pt-2 flex justify-center">
-            <button
-              type="submit"
+            <FormSubmitButton
+              label="Save dish"
+              pendingLabel="Saving dish..."
               className="inline-flex w-full max-w-xs items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-bold uppercase tracking-[0.18em] text-accent-foreground shadow-[0_14px_30px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(0,0,0,0.24)]"
-            >
-              Save dish
-            </button>
+            />
           </div>
         </form>
       </div>
