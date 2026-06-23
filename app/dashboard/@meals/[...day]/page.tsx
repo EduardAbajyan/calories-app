@@ -3,8 +3,8 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import TemporalMessage from "../../../components/temporal-message";
-import FormSubmitButton from "../../../components/form-submit-button";
+import TemporalMessage from "../../../../components/temporal-message";
+import FormSubmitButton from "../../../../components/form-submit-button";
 
 type MealsSearchParams = {
   mealQ?: string;
@@ -32,6 +32,22 @@ function getUTCStartOfDay(dayOffset = 0): Date {
 
   if (!dayOffset) return utcToday;
   return new Date(utcToday.getTime() - dayOffset * MS_PER_DAY);
+}
+
+function parseDayOffset(value?: string): number {
+  if (!value || !/^\d+$/.test(value)) return 0;
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isNaN(parsed) || parsed < 0 ? 0 : parsed;
+}
+
+function formatDateDisplay(date: Date): string {
+  const options: Intl.DateTimeFormatOptions = {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  };
+  return date.toLocaleDateString("en-US", options);
 }
 
 async function getOrCreateUserDay(userId: string, dayStart: Date) {
@@ -71,6 +87,7 @@ async function getOrCreateUserDay(userId: string, dayStart: Date) {
 }
 
 function buildDashboardHref(
+  dayOffset: number,
   mealQ: string,
   dishQ: string,
   foodQ: string,
@@ -86,12 +103,15 @@ function buildDashboardHref(
   if (message.error) params.set("error", message.error);
 
   const query = params.toString();
-  return query ? `/dashboard?${query}` : "/dashboard";
+  const basePath = dayOffset > 0 ? `/dashboard/${dayOffset}` : "/dashboard";
+  return query ? `${basePath}?${query}` : basePath;
 }
 
 export default async function MealsPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ day?: string[] }>;
   searchParams: Promise<MealsSearchParams>;
 }) {
   const session = await auth();
@@ -100,12 +120,19 @@ export default async function MealsPage({
     return null;
   }
 
-  const params = await searchParams;
-  const mealQ = String(params.mealQ ?? "").trim();
-  const dishQ = String(params.dishQ ?? "").trim();
-  const foodQ = String(params.foodQ ?? "").trim();
-  const success = params.success;
-  const error = params.error;
+  const resolvedParams = await params;
+  const routeValue = resolvedParams.day ? resolvedParams.day[0] : undefined;
+  const dayOffset = parseDayOffset(routeValue);
+
+  const searchParamsResolved = await searchParams;
+  const mealQ = String(searchParamsResolved.mealQ ?? "").trim();
+  const dishQ = String(searchParamsResolved.dishQ ?? "").trim();
+  const foodQ = String(searchParamsResolved.foodQ ?? "").trim();
+  const success = searchParamsResolved.success;
+  const error = searchParamsResolved.error;
+
+  const dayStart = getUTCStartOfDay(dayOffset);
+  const dayDisplay = formatDateDisplay(dayStart);
 
   async function addFoodToToday(formData: FormData) {
     "use server";
@@ -123,7 +150,7 @@ export default async function MealsPage({
 
     if (!Number.isInteger(foodId) || foodId <= 0) {
       redirect(
-        buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, {
+        buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
           error: "Invalid food",
         }),
       );
@@ -133,7 +160,6 @@ export default async function MealsPage({
       ? Math.max(1, Math.round(grams))
       : 100;
 
-    const dayStart = getUTCStartOfDay(0);
     const userDay = await getOrCreateUserDay(activeSession.user.id, dayStart);
 
     await prisma.dailyLog.create({
@@ -146,7 +172,7 @@ export default async function MealsPage({
 
     revalidatePath("/dashboard");
     redirect(
-      buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, {
+      buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
         success: "food",
       }),
     );
@@ -168,7 +194,7 @@ export default async function MealsPage({
 
     if (!Number.isInteger(dishId) || dishId <= 0) {
       redirect(
-        buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, {
+        buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
           error: "Invalid dish",
         }),
       );
@@ -181,7 +207,7 @@ export default async function MealsPage({
 
     if (!dish) {
       redirect(
-        buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, {
+        buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
           error: "Dish not found",
         }),
       );
@@ -191,7 +217,6 @@ export default async function MealsPage({
       ? Math.max(1, Math.round(servings))
       : 1;
 
-    const dayStart = getUTCStartOfDay(0);
     const userDay = await getOrCreateUserDay(activeSession.user.id, dayStart);
 
     await prisma.dailyLog.create({
@@ -204,7 +229,7 @@ export default async function MealsPage({
 
     revalidatePath("/dashboard");
     redirect(
-      buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, {
+      buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
         success: "dish",
       }),
     );
@@ -225,7 +250,7 @@ export default async function MealsPage({
 
     if (!Number.isInteger(mealId) || mealId <= 0) {
       redirect(
-        buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, {
+        buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
           error: "Invalid meal",
         }),
       );
@@ -245,13 +270,12 @@ export default async function MealsPage({
 
     if (!meal || meal.dishes.length === 0) {
       redirect(
-        buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, {
+        buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
           error: "Meal has no dishes",
         }),
       );
     }
 
-    const dayStart = getUTCStartOfDay(0);
     const userDay = await getOrCreateUserDay(activeSession.user.id, dayStart);
 
     await prisma.$transaction(async (tx: TransactionClient) => {
@@ -292,7 +316,7 @@ export default async function MealsPage({
 
     revalidatePath("/dashboard");
     redirect(
-      buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, {
+      buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
         success: "meal",
       }),
     );
@@ -368,8 +392,8 @@ export default async function MealsPage({
             Search meals, dishes, and foods
           </h3>
           <p className="mt-2 text-sm leading-6 text-foreground/70">
-            Add selected foods, dishes, or full meal contents directly to
-            today&apos;s daily log.
+            Add selected foods, dishes, or full meal contents to {dayDisplay}
+            &apos;s daily log.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -393,10 +417,10 @@ export default async function MealsPage({
           className="mb-4 rounded-2xl border border-success/20 bg-success-soft px-4 py-3 text-sm font-medium text-success shadow-sm"
           message={
             success === "meal"
-              ? "Meal contents added to today."
+              ? `Meal contents added to ${dayDisplay}.`
               : success === "dish"
-                ? "Dish added to today."
-                : "Food added to today."
+                ? `Dish added to ${dayDisplay}.`
+                : `Food added to ${dayDisplay}.`
           }
         />
       ) : null}
@@ -415,14 +439,14 @@ export default async function MealsPage({
               Meals
             </h4>
           </div>
-          <form method="get" action="/dashboard" className="space-y-2">
+          <form method="get" action={dayOffset > 0 ? `/dashboard/${dayOffset}` : "/dashboard"} className="space-y-2">
             <input type="hidden" name="dishQ" value={dishQ} />
             <input type="hidden" name="foodQ" value={foodQ} />
             <label
               htmlFor="mealQ"
               className="block text-xs font-semibold text-accent"
             >
-              Search meal names and add all dish contents to today
+              Search meal names and add all dish contents to {dayDisplay}
             </label>
             <div className="group flex gap-3 rounded-xl border border-border bg-surface p-3 shadow-sm">
               <div className="min-w-0 flex-1 transition-all duration-300 ease-out group-focus-within:flex-[1_1_100%]">
@@ -485,8 +509,8 @@ export default async function MealsPage({
                       </p>
                     </div>
                     <FormSubmitButton
-                      label="Add meal to today's list"
-                      pendingLabel="Add meal to today"
+                      label={`Add meal to ${dayDisplay}'s list`}
+                      pendingLabel={`Add meal to ${dayDisplay}`}
                       className="inline-flex items-center justify-center rounded-full border border-border bg-surface-elevated px-3 py-2 text-xs font-semibold text-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-border-strong hover:bg-surface"
                     />
                   </form>
@@ -502,14 +526,14 @@ export default async function MealsPage({
               Dishes
             </h4>
           </div>
-          <form method="get" action="/dashboard" className="space-y-2">
+          <form method="get" action={dayOffset > 0 ? `/dashboard/${dayOffset}` : "/dashboard"} className="space-y-2">
             <input type="hidden" name="mealQ" value={mealQ} />
             <input type="hidden" name="foodQ" value={foodQ} />
             <label
               htmlFor="dishQ"
               className="block text-xs font-semibold text-accent"
             >
-              Search dishes and add one serving to today
+              Search dishes and add one serving to {dayDisplay}
             </label>
             <div className="group flex gap-3 rounded-xl border border-border bg-surface p-3 shadow-sm">
               <div className="min-w-0 flex-1 transition-all duration-300 ease-out group-focus-within:flex-[1_1_100%]">
@@ -569,8 +593,8 @@ export default async function MealsPage({
                       </p>
                     </div>
                     <FormSubmitButton
-                      label="Add dish to today's list"
-                      pendingLabel="Add dish to today"
+                      label={`Add dish to ${dayDisplay}'s list`}
+                      pendingLabel={`Add dish to ${dayDisplay}`}
                       className="inline-flex items-center justify-center rounded-full border border-border bg-surface-elevated px-3 py-2 text-xs font-semibold text-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-border-strong hover:bg-surface"
                     />
                   </form>
@@ -586,14 +610,14 @@ export default async function MealsPage({
               Foods
             </h4>
           </div>
-          <form method="get" action="/dashboard" className="space-y-2">
+          <form method="get" action={dayOffset > 0 ? `/dashboard/${dayOffset}` : "/dashboard"} className="space-y-2">
             <input type="hidden" name="mealQ" value={mealQ} />
             <input type="hidden" name="dishQ" value={dishQ} />
             <label
               htmlFor="foodQ"
               className="block text-xs font-semibold text-accent"
             >
-              Search foods and add them to today (default 100g)
+              Search foods and add them to {dayDisplay} (default 100g)
             </label>
             <div className="group flex gap-3 rounded-xl border border-border bg-surface p-3 shadow-sm">
               <div className="min-w-0 flex-1 transition-all duration-300 ease-out group-focus-within:flex-[1_1_100%]">
@@ -653,8 +677,8 @@ export default async function MealsPage({
                       </p>
                     </div>
                     <FormSubmitButton
-                      label="Add 100g to today's list"
-                      pendingLabel="Adding 100g to today's list..."
+                      label={`Add 100g to ${dayDisplay}'s list`}
+                      pendingLabel={`Add 100g to ${dayDisplay}`}
                       className="inline-flex items-center justify-center rounded-full border border-border bg-surface-elevated px-3 py-2 text-xs font-semibold text-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-border-strong hover:bg-surface"
                     />
                   </form>

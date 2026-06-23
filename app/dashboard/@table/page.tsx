@@ -6,35 +6,33 @@ import { useRouter } from "next/navigation";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-// Helpers use UTC midnight so client and server always agree on day boundaries
-function getUTCToday(): Date {
+// Helpers use local midnight so day boundaries follow the user's local time.
+function getLocalToday(): Date {
   const now = new Date();
-  return new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  );
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
-function formatAsDateInputValue(utcDate: Date) {
-  const year = utcDate.getUTCFullYear();
-  const month = String(utcDate.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(utcDate.getUTCDate()).padStart(2, "0");
+function formatAsDateInputValue(localDate: Date) {
+  const year = localDate.getFullYear();
+  const month = String(localDate.getMonth() + 1).padStart(2, "0");
+  const day = String(localDate.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
 function parseDateInputValue(value: string) {
   const [y, m, d] = value.split("-").map(Number);
-  const date = new Date(Date.UTC(y, m - 1, d));
+  const date = new Date(y, m - 1, d);
   return date;
 }
 
-function getDateFromOffset(offset: number, utcToday: Date) {
-  const date = new Date(utcToday.getTime() - offset * MS_PER_DAY);
+function getDateFromOffset(offset: number, today: Date) {
+  const date = new Date(today.getTime() - offset * MS_PER_DAY);
   return date;
 }
 
-function getOffsetFromDate(value: string, utcToday: Date) {
+function getOffsetFromDate(value: string, today: Date) {
   const selected = parseDateInputValue(value);
-  const diff = utcToday.getTime() - selected.getTime();
+  const diff = today.getTime() - selected.getTime();
   return Math.max(0, Math.floor(diff / MS_PER_DAY));
 }
 
@@ -51,8 +49,8 @@ export default function Table({
   params: Promise<{ day?: string[] }>;
 }) {
   const router = useRouter();
-  const today = useMemo(() => getUTCToday(), []);
-  const maxDate = formatAsDateInputValue(today); // Today in YYYY-MM-DD (UTC)
+  const today = useMemo(() => getLocalToday(), []);
+  const maxDate = formatAsDateInputValue(today); // Today in YYYY-MM-DD (local)
   const minDate = formatAsDateInputValue(
     new Date(today.getTime() - 90 * MS_PER_DAY),
   );
