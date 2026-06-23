@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { signOutAction } from "./sidebar-actions";
 import Link from "next/link";
 
 export default function DashboardSidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
@@ -14,6 +17,23 @@ export default function DashboardSidebar() {
       document.body.style.overflow = "";
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
+
+  function handleNavClick(href: string) {
+    setPendingHref(href);
+    setIsOpen(false);
+  }
+
+  const linkClassName = (href: string) => {
+    const isPending = pendingHref === href;
+
+    return `group flex items-center rounded-2xl border border-transparent px-3 py-2 text-foreground transition hover:border-border hover:bg-surface-elevated hover:text-accent ${
+      isPending ? "pointer-events-none opacity-60" : ""
+    }`;
+  };
 
   return (
     <>
@@ -74,8 +94,9 @@ export default function DashboardSidebar() {
             <li>
               <Link
                 href="/dashboard"
-                onClick={() => setIsOpen(false)}
-                className="group flex items-center rounded-2xl border border-transparent px-3 py-2 text-foreground transition hover:border-border hover:bg-surface-elevated hover:text-accent"
+                aria-disabled={pendingHref === "/dashboard"}
+                onClick={() => handleNavClick("/dashboard")}
+                className={linkClassName("/dashboard")}
               >
                 <svg
                   className="h-5 w-6 shrink-0 transition duration-75 group-hover:text-accent"
@@ -100,8 +121,9 @@ export default function DashboardSidebar() {
             <li>
               <Link
                 href="/dashboard/1"
-                onClick={() => setIsOpen(false)}
-                className="group flex items-center rounded-2xl border border-transparent px-3 py-2 text-foreground transition hover:border-border hover:bg-surface-elevated hover:text-accent"
+                aria-disabled={pendingHref === "/dashboard/1"}
+                onClick={() => handleNavClick("/dashboard/1")}
+                className={linkClassName("/dashboard/1")}
               >
                 <svg
                   className="h-5 w-5 shrink-0 transition duration-75 group-hover:text-accent"
@@ -127,8 +149,9 @@ export default function DashboardSidebar() {
             <li>
               <Link
                 href="/add-meal"
-                onClick={() => setIsOpen(false)}
-                className="group flex items-center rounded-2xl border border-transparent px-3 py-2 text-foreground transition hover:border-border hover:bg-surface-elevated hover:text-accent"
+                aria-disabled={pendingHref === "/add-meal"}
+                onClick={() => handleNavClick("/add-meal")}
+                className={linkClassName("/add-meal")}
               >
                 <svg
                   className="h-5 w-5 shrink-0 transition duration-75 group-hover:text-accent"
@@ -154,8 +177,9 @@ export default function DashboardSidebar() {
             <li>
               <Link
                 href="/add-dish"
-                onClick={() => setIsOpen(false)}
-                className="group flex items-center rounded-2xl border border-transparent px-3 py-2 text-foreground transition hover:border-border hover:bg-surface-elevated hover:text-accent"
+                aria-disabled={pendingHref === "/add-dish"}
+                onClick={() => handleNavClick("/add-dish")}
+                className={linkClassName("/add-dish")}
               >
                 <svg
                   className="h-5 w-5 shrink-0 transition duration-75 group-hover:text-accent"
@@ -181,8 +205,9 @@ export default function DashboardSidebar() {
             <li>
               <Link
                 href="/add-food"
-                onClick={() => setIsOpen(false)}
-                className="group flex items-center rounded-2xl border border-transparent px-3 py-2 text-foreground transition hover:border-border hover:bg-surface-elevated hover:text-accent"
+                aria-disabled={pendingHref === "/add-food"}
+                onClick={() => handleNavClick("/add-food")}
+                className={linkClassName("/add-food")}
               >
                 <svg
                   className="h-5 w-5 shrink-0 transition duration-75 group-hover:text-accent"
@@ -208,8 +233,9 @@ export default function DashboardSidebar() {
             <li>
               <Link
                 href="/liked-meals"
-                onClick={() => setIsOpen(false)}
-                className="group flex items-center rounded-2xl border border-transparent px-3 py-2 text-foreground transition hover:border-border hover:bg-surface-elevated hover:text-accent"
+                aria-disabled={pendingHref === "/liked-meals"}
+                onClick={() => handleNavClick("/liked-meals")}
+                className={linkClassName("/liked-meals")}
               >
                 <svg
                   className="h-5 w-5 shrink-0 transition duration-75 group-hover:text-accent"
