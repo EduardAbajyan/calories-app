@@ -7,6 +7,7 @@ import logo from "./assets/logo.png";
 
 import GoogleSingIn from "@/components/google-sign-in-button";
 import AuthForm from "@/components/credentials-sign-in-form";
+import { AuthPendingProvider } from "@/components/auth-pending-context";
 
 export default async function Home({
   searchParams,
@@ -20,8 +21,10 @@ export default async function Home({
     return (
       <div className={styles.container}>
         <Image src={logo} alt="logo" width={315} height={270} loading="eager" />
-        <GoogleSingIn />
-        <AuthForm mode={mode} />
+        <AuthPendingProvider>
+          <GoogleSingIn />
+          <AuthForm mode={mode} />
+        </AuthPendingProvider>
       </div>
     );
   } else {
