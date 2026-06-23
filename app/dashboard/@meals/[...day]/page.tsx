@@ -91,7 +91,7 @@ function buildDashboardHref(
   mealQ: string,
   dishQ: string,
   foodQ: string,
-  message: { success?: string; error?: string },
+  message: { success?: string; error?: string; refreshKey?: string },
 ) {
   const params = new URLSearchParams();
 
@@ -101,6 +101,7 @@ function buildDashboardHref(
 
   if (message.success) params.set("success", message.success);
   if (message.error) params.set("error", message.error);
+  if (message.refreshKey) params.set("refreshKey", message.refreshKey);
 
   const query = params.toString();
   const basePath = dayOffset > 0 ? `/dashboard/${dayOffset}` : "/dashboard";
@@ -113,6 +114,10 @@ function revalidateDashboardTable(dayOffset: number) {
   if (dayOffset > 0) {
     revalidatePath(`/dashboard/${dayOffset}`, "layout");
   }
+}
+
+function getRefreshKey() {
+  return Date.now().toString();
 }
 
 export default async function MealsPage({
@@ -182,6 +187,7 @@ export default async function MealsPage({
     redirect(
       buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
         success: "food",
+        refreshKey: getRefreshKey(),
       }),
     );
   }
@@ -239,6 +245,7 @@ export default async function MealsPage({
     redirect(
       buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
         success: "dish",
+        refreshKey: getRefreshKey(),
       }),
     );
   }
@@ -326,6 +333,7 @@ export default async function MealsPage({
     redirect(
       buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
         success: "meal",
+        refreshKey: getRefreshKey(),
       }),
     );
   }

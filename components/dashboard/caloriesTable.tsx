@@ -10,9 +10,11 @@ import {
 
 export default function TableComponent({
   day,
+  refreshKey,
   onDayLoad,
 }: {
   day: number | undefined;
+  refreshKey?: string;
   onDayLoad?: () => void;
 }): JSX.Element {
   const dataCellClass = "px-3 py-3 text-sm text-foreground";
@@ -124,7 +126,7 @@ export default function TableComponent({
       }
     }
     fetchTodaysData();
-  }, [day, onDayLoad]);
+  }, [day, onDayLoad, refreshKey]);
 
   useEffect(() => {
     if (newItemsCount === 0) setSaveButton(false);

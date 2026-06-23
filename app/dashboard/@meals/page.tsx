@@ -74,7 +74,7 @@ function buildDashboardHref(
   mealQ: string,
   dishQ: string,
   foodQ: string,
-  message: { success?: string; error?: string },
+  message: { success?: string; error?: string; refreshKey?: string },
 ) {
   const params = new URLSearchParams();
 
@@ -84,6 +84,7 @@ function buildDashboardHref(
 
   if (message.success) params.set("success", message.success);
   if (message.error) params.set("error", message.error);
+  if (message.refreshKey) params.set("refreshKey", message.refreshKey);
 
   const query = params.toString();
   return query ? `/dashboard?${query}` : "/dashboard";
@@ -91,6 +92,10 @@ function buildDashboardHref(
 
 function revalidateDashboardTable() {
   revalidatePath("/dashboard", "layout");
+}
+
+function getRefreshKey() {
+  return Date.now().toString();
 }
 
 export default async function MealsPage({
@@ -152,6 +157,7 @@ export default async function MealsPage({
     redirect(
       buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, {
         success: "food",
+        refreshKey: getRefreshKey(),
       }),
     );
   }
@@ -210,6 +216,7 @@ export default async function MealsPage({
     redirect(
       buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, {
         success: "dish",
+        refreshKey: getRefreshKey(),
       }),
     );
   }
@@ -298,6 +305,7 @@ export default async function MealsPage({
     redirect(
       buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, {
         success: "meal",
+        refreshKey: getRefreshKey(),
       }),
     );
   }

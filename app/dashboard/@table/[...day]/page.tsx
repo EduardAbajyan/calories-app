@@ -2,7 +2,7 @@
 import CaloriesTable from "@/components/dashboard/caloriesTable";
 import Loading from "@/components/loading";
 import { use, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -49,6 +49,8 @@ export default function Table({
   params: Promise<{ day?: string[] }>;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const refreshKey = searchParams.get("refreshKey") ?? "";
   const today = useMemo(() => getLocalToday(), []);
   const maxDate = formatAsDateInputValue(today); // Today in YYYY-MM-DD (local)
   const minDate = formatAsDateInputValue(
@@ -241,6 +243,7 @@ export default function Table({
         <div className={`${isChangingDate ? "hidden" : undefined} `}>
           <CaloriesTable
             day={dayOffset}
+            refreshKey={refreshKey}
             onDayLoad={() => setIsChangingDate(false)}
           />
         </div>
