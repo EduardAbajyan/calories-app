@@ -51,6 +51,7 @@ export default function Table({
   const router = useRouter();
   const searchParams = useSearchParams();
   const refreshKey = searchParams.get("refreshKey") ?? "";
+  const [isMounted, setIsMounted] = useState(false);
   const today = useMemo(() => getLocalToday(), []);
   const maxDate = formatAsDateInputValue(today); // Today in YYYY-MM-DD (local)
   const minDate = formatAsDateInputValue(
@@ -74,6 +75,20 @@ export default function Table({
       formatAsDateInputValue(getDateFromOffset(nextOffset, today)),
     );
   }, [routeValue, today]);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <div className="relative min-w-full md:min-w-full max-w-full md:max-w-full space-y-6">
+        <div className="overflow-hidden rounded-[28px] border border-border/70 bg-surface/80 shadow-[0_24px_70px_rgba(0,0,0,0.14)] backdrop-blur-xl">
+          <Loading />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-w-full md:min-w-full max-w-full md:max-w-full space-y-6">

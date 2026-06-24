@@ -207,13 +207,28 @@ export default async function MealsPage({
       writeDayStart,
     );
 
-    await prisma.dailyLog.create({
-      data: {
-        use_day_id: userDay.id,
-        foodId,
-        amount: safeAmount,
-      },
-    });
+    try {
+      await prisma.dailyLog.create({
+        data: {
+          use_day_id: userDay.id,
+          foodId,
+          amount: safeAmount,
+        },
+      });
+    } catch {
+      redirect(
+        buildDashboardHref(
+          dayOffset,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Failed to add food",
+          },
+        ),
+      );
+    }
 
     revalidateDashboardTable(dayOffset);
     redirect(
@@ -293,13 +308,28 @@ export default async function MealsPage({
       writeDayStart,
     );
 
-    await prisma.dailyLog.create({
-      data: {
-        use_day_id: userDay.id,
-        dishId,
-        amount: safeServings,
-      },
-    });
+    try {
+      await prisma.dailyLog.create({
+        data: {
+          use_day_id: userDay.id,
+          dishId,
+          amount: safeServings,
+        },
+      });
+    } catch {
+      redirect(
+        buildDashboardHref(
+          dayOffset,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Failed to add dish",
+          },
+        ),
+      );
+    }
 
     revalidateDashboardTable(dayOffset);
     redirect(
@@ -381,41 +411,56 @@ export default async function MealsPage({
       writeDayStart,
     );
 
-    await prisma.$transaction(async (tx: TransactionClient) => {
-      await tx.dailyLog.createMany({
-        data: meal.dishes.map((dish: { dishId: number }) => ({
-          use_day_id: userDay.id,
-          dishId: dish.dishId,
-          amount: 1,
-        })),
-      });
+    try {
+      await prisma.$transaction(async (tx: TransactionClient) => {
+        await tx.dailyLog.createMany({
+          data: meal.dishes.map((dish: { dishId: number }) => ({
+            use_day_id: userDay.id,
+            dishId: dish.dishId,
+            amount: 1,
+          })),
+        });
 
-      const userMeal = await tx.usersBelovedMeals.findUnique({
-        where: {
-          userId_mealId: {
-            userId: activeSession.user.id,
-            mealId: meal.id,
-          },
-        },
-        select: { userId: true, mealId: true },
-      });
-
-      if (userMeal) {
-        await tx.usersBelovedMeals.update({
+        const userMeal = await tx.usersBelovedMeals.findUnique({
           where: {
             userId_mealId: {
               userId: activeSession.user.id,
               mealId: meal.id,
             },
           },
-          data: {
-            countsConsumed: {
-              increment: 1,
-            },
-          },
+          select: { userId: true, mealId: true },
         });
-      }
-    });
+
+        if (userMeal) {
+          await tx.usersBelovedMeals.update({
+            where: {
+              userId_mealId: {
+                userId: activeSession.user.id,
+                mealId: meal.id,
+              },
+            },
+            data: {
+              countsConsumed: {
+                increment: 1,
+              },
+            },
+          });
+        }
+      });
+    } catch {
+      redirect(
+        buildDashboardHref(
+          dayOffset,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Failed to add meal",
+          },
+        ),
+      );
+    }
 
     revalidateDashboardTable(dayOffset);
     redirect(
