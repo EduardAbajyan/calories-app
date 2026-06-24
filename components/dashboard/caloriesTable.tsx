@@ -17,6 +17,7 @@ export default function TableComponent({
   refreshKey?: string;
   onDayLoad?: () => void;
 }): JSX.Element {
+  const tzOffsetMin = new Date().getTimezoneOffset();
   const dataCellClass = "px-3 py-3 text-sm text-foreground";
   const metricCellClass =
     "px-3 py-3 text-sm font-medium text-foreground/75 whitespace-nowrap";
@@ -78,7 +79,7 @@ export default function TableComponent({
     async function fetchTodaysData() {
       try {
         setLoading(true);
-        const dailyLogData = await fetchChosenDate(day);
+        const dailyLogData = await fetchChosenDate(day, tzOffsetMin);
 
         const formattedData = dailyLogData.map((item: DailyLogItem) => ({
           id: item.id,
@@ -373,6 +374,7 @@ export default function TableComponent({
               fat: parseInt(fat || "0"),
             },
             day,
+            tzOffsetMin,
           );
 
           if (!result.success) {
@@ -384,7 +386,7 @@ export default function TableComponent({
 
       if (allSuccess) {
         // Refresh the data
-        const dailyLogData = await fetchChosenDate(Number(day));
+        const dailyLogData = await fetchChosenDate(Number(day), tzOffsetMin);
         const formattedData = dailyLogData.map((item: DailyLogItem) => ({
           id: item.id,
           checkbox: (
@@ -393,7 +395,7 @@ export default function TableComponent({
               onClick={() => deleteHandler(item.id)}
             >
               <div className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface-elevated shadow-sm">
-                ✓
+                ×
               </div>
             </td>
           ),
@@ -483,7 +485,7 @@ export default function TableComponent({
           <thead>
             <tr className="border-b border-border/70 bg-surface-elevated/80">
               <th className="w-12 px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
-                Done
+                Remove
               </th>
               <th className="w-1/3 px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
                 Name

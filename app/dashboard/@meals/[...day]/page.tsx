@@ -5,11 +5,13 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import TemporalMessage from "../../../../components/temporal-message";
 import FormSubmitButton from "../../../../components/form-submit-button";
+import TimezoneOffsetInput from "@/components/timezone-offset-input";
 
 type MealsSearchParams = {
   mealQ?: string;
   dishQ?: string;
   foodQ?: string;
+  tzOffsetMin?: string;
   success?: string;
   error?: string;
 };
@@ -24,14 +26,24 @@ function getDayNumberFromDate(date: Date): number {
   return Math.floor(date.getTime() / MS_PER_DAY);
 }
 
-function getUTCStartOfDay(dayOffset = 0): Date {
-  const now = new Date();
-  const utcToday = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  );
+function parseTimezoneOffsetMinutes(value: unknown): number {
+  const parsed = Number(value);
 
-  if (!dayOffset) return utcToday;
-  return new Date(utcToday.getTime() - dayOffset * MS_PER_DAY);
+  if (!Number.isFinite(parsed)) return 0;
+  if (!Number.isInteger(parsed)) return 0;
+  if (parsed < -14 * 60 || parsed > 14 * 60) return 0;
+
+  return parsed;
+}
+
+function getUTCStartOfClientDay(dayOffset = 0, tzOffsetMin = 0): Date {
+  const now = Date.now();
+  const localNowMs = now - tzOffsetMin * 60 * 1000;
+  const localDayStartMs = Math.floor(localNowMs / MS_PER_DAY) * MS_PER_DAY;
+  const targetLocalDayStartMs = localDayStartMs - dayOffset * MS_PER_DAY;
+  const utcMs = targetLocalDayStartMs + tzOffsetMin * 60 * 1000;
+
+  return new Date(utcMs);
 }
 
 function parseDayOffset(value?: string): number {
@@ -40,14 +52,15 @@ function parseDayOffset(value?: string): number {
   const parsed = Number.parseInt(value, 10);
   return Number.isNaN(parsed) || parsed < 0 ? 0 : parsed;
 }
+function formatDateDisplayForOffset(date: Date, tzOffsetMin: number): string {
+  const shifted = new Date(date.getTime() - tzOffsetMin * 60 * 1000);
 
-function formatDateDisplay(date: Date): string {
-  const options: Intl.DateTimeFormatOptions = {
+  return shifted.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
-  };
-  return date.toLocaleDateString("en-US", options);
+    timeZone: "UTC",
+  });
 }
 
 async function getOrCreateUserDay(userId: string, dayStart: Date) {
@@ -91,6 +104,7 @@ function buildDashboardHref(
   mealQ: string,
   dishQ: string,
   foodQ: string,
+  tzOffsetMin: number,
   message: { success?: string; error?: string; refreshKey?: string },
 ) {
   const params = new URLSearchParams();
@@ -98,6 +112,7 @@ function buildDashboardHref(
   if (mealQ) params.set("mealQ", mealQ);
   if (dishQ) params.set("dishQ", dishQ);
   if (foodQ) params.set("foodQ", foodQ);
+  params.set("tzOffsetMin", String(tzOffsetMin));
 
   if (message.success) params.set("success", message.success);
   if (message.error) params.set("error", message.error);
@@ -141,11 +156,14 @@ export default async function MealsPage({
   const mealQ = String(searchParamsResolved.mealQ ?? "").trim();
   const dishQ = String(searchParamsResolved.dishQ ?? "").trim();
   const foodQ = String(searchParamsResolved.foodQ ?? "").trim();
+  const tzOffsetMin = parseTimezoneOffsetMinutes(
+    searchParamsResolved.tzOffsetMin,
+  );
   const success = searchParamsResolved.success;
   const error = searchParamsResolved.error;
 
-  const dayStart = getUTCStartOfDay(dayOffset);
-  const dayDisplay = formatDateDisplay(dayStart);
+  const dayStart = getUTCStartOfClientDay(dayOffset, tzOffsetMin);
+  const dayDisplay = formatDateDisplayForOffset(dayStart, tzOffsetMin);
 
   async function addFoodToToday(formData: FormData) {
     "use server";
@@ -160,12 +178,22 @@ export default async function MealsPage({
     const nextMealQ = String(formData.get("mealQ") ?? "").trim();
     const nextDishQ = String(formData.get("dishQ") ?? "").trim();
     const nextFoodQ = String(formData.get("foodQ") ?? "").trim();
+    const nextTzOffsetMin = parseTimezoneOffsetMinutes(
+      formData.get("tzOffsetMin"),
+    );
 
     if (!Number.isInteger(foodId) || foodId <= 0) {
       redirect(
-        buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
-          error: "Invalid food",
-        }),
+        buildDashboardHref(
+          dayOffset,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Invalid food",
+          },
+        ),
       );
     }
 
@@ -173,7 +201,11 @@ export default async function MealsPage({
       ? Math.max(1, Math.round(grams))
       : 100;
 
-    const userDay = await getOrCreateUserDay(activeSession.user.id, dayStart);
+    const writeDayStart = getUTCStartOfClientDay(dayOffset, nextTzOffsetMin);
+    const userDay = await getOrCreateUserDay(
+      activeSession.user.id,
+      writeDayStart,
+    );
 
     await prisma.dailyLog.create({
       data: {
@@ -185,10 +217,17 @@ export default async function MealsPage({
 
     revalidateDashboardTable(dayOffset);
     redirect(
-      buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
-        success: "food",
-        refreshKey: getRefreshKey(),
-      }),
+      buildDashboardHref(
+        dayOffset,
+        nextMealQ,
+        nextDishQ,
+        nextFoodQ,
+        nextTzOffsetMin,
+        {
+          success: "food",
+          refreshKey: getRefreshKey(),
+        },
+      ),
     );
   }
 
@@ -205,12 +244,22 @@ export default async function MealsPage({
     const nextMealQ = String(formData.get("mealQ") ?? "").trim();
     const nextDishQ = String(formData.get("dishQ") ?? "").trim();
     const nextFoodQ = String(formData.get("foodQ") ?? "").trim();
+    const nextTzOffsetMin = parseTimezoneOffsetMinutes(
+      formData.get("tzOffsetMin"),
+    );
 
     if (!Number.isInteger(dishId) || dishId <= 0) {
       redirect(
-        buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
-          error: "Invalid dish",
-        }),
+        buildDashboardHref(
+          dayOffset,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Invalid dish",
+          },
+        ),
       );
     }
 
@@ -221,9 +270,16 @@ export default async function MealsPage({
 
     if (!dish) {
       redirect(
-        buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
-          error: "Dish not found",
-        }),
+        buildDashboardHref(
+          dayOffset,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Dish not found",
+          },
+        ),
       );
     }
 
@@ -231,7 +287,11 @@ export default async function MealsPage({
       ? Math.max(1, Math.round(servings))
       : 1;
 
-    const userDay = await getOrCreateUserDay(activeSession.user.id, dayStart);
+    const writeDayStart = getUTCStartOfClientDay(dayOffset, nextTzOffsetMin);
+    const userDay = await getOrCreateUserDay(
+      activeSession.user.id,
+      writeDayStart,
+    );
 
     await prisma.dailyLog.create({
       data: {
@@ -243,10 +303,17 @@ export default async function MealsPage({
 
     revalidateDashboardTable(dayOffset);
     redirect(
-      buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
-        success: "dish",
-        refreshKey: getRefreshKey(),
-      }),
+      buildDashboardHref(
+        dayOffset,
+        nextMealQ,
+        nextDishQ,
+        nextFoodQ,
+        nextTzOffsetMin,
+        {
+          success: "dish",
+          refreshKey: getRefreshKey(),
+        },
+      ),
     );
   }
 
@@ -262,12 +329,22 @@ export default async function MealsPage({
     const nextMealQ = String(formData.get("mealQ") ?? "").trim();
     const nextDishQ = String(formData.get("dishQ") ?? "").trim();
     const nextFoodQ = String(formData.get("foodQ") ?? "").trim();
+    const nextTzOffsetMin = parseTimezoneOffsetMinutes(
+      formData.get("tzOffsetMin"),
+    );
 
     if (!Number.isInteger(mealId) || mealId <= 0) {
       redirect(
-        buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
-          error: "Invalid meal",
-        }),
+        buildDashboardHref(
+          dayOffset,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Invalid meal",
+          },
+        ),
       );
     }
 
@@ -285,13 +362,24 @@ export default async function MealsPage({
 
     if (!meal || meal.dishes.length === 0) {
       redirect(
-        buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
-          error: "Meal has no dishes",
-        }),
+        buildDashboardHref(
+          dayOffset,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Meal has no dishes",
+          },
+        ),
       );
     }
 
-    const userDay = await getOrCreateUserDay(activeSession.user.id, dayStart);
+    const writeDayStart = getUTCStartOfClientDay(dayOffset, nextTzOffsetMin);
+    const userDay = await getOrCreateUserDay(
+      activeSession.user.id,
+      writeDayStart,
+    );
 
     await prisma.$transaction(async (tx: TransactionClient) => {
       await tx.dailyLog.createMany({
@@ -331,10 +419,17 @@ export default async function MealsPage({
 
     revalidateDashboardTable(dayOffset);
     redirect(
-      buildDashboardHref(dayOffset, nextMealQ, nextDishQ, nextFoodQ, {
-        success: "meal",
-        refreshKey: getRefreshKey(),
-      }),
+      buildDashboardHref(
+        dayOffset,
+        nextMealQ,
+        nextDishQ,
+        nextFoodQ,
+        nextTzOffsetMin,
+        {
+          success: "meal",
+          refreshKey: getRefreshKey(),
+        },
+      ),
     );
   }
 
@@ -455,9 +550,14 @@ export default async function MealsPage({
               Meals
             </h4>
           </div>
-          <form method="get" action={dayOffset > 0 ? `/dashboard/${dayOffset}` : "/dashboard"} className="space-y-2">
+          <form
+            method="get"
+            action={dayOffset > 0 ? `/dashboard/${dayOffset}` : "/dashboard"}
+            className="space-y-2"
+          >
             <input type="hidden" name="dishQ" value={dishQ} />
             <input type="hidden" name="foodQ" value={foodQ} />
+            <TimezoneOffsetInput />
             <label
               htmlFor="mealQ"
               className="block text-xs font-semibold text-accent"
@@ -501,6 +601,7 @@ export default async function MealsPage({
                     <input type="hidden" name="mealQ" value={mealQ} />
                     <input type="hidden" name="dishQ" value={dishQ} />
                     <input type="hidden" name="foodQ" value={foodQ} />
+                    <TimezoneOffsetInput />
                     <div className="h-44 w-full overflow-hidden rounded-base bg-background">
                       {meal.image ? (
                         <img
@@ -542,9 +643,14 @@ export default async function MealsPage({
               Dishes
             </h4>
           </div>
-          <form method="get" action={dayOffset > 0 ? `/dashboard/${dayOffset}` : "/dashboard"} className="space-y-2">
+          <form
+            method="get"
+            action={dayOffset > 0 ? `/dashboard/${dayOffset}` : "/dashboard"}
+            className="space-y-2"
+          >
             <input type="hidden" name="mealQ" value={mealQ} />
             <input type="hidden" name="foodQ" value={foodQ} />
+            <TimezoneOffsetInput />
             <label
               htmlFor="dishQ"
               className="block text-xs font-semibold text-accent"
@@ -586,6 +692,7 @@ export default async function MealsPage({
                     <input type="hidden" name="mealQ" value={mealQ} />
                     <input type="hidden" name="dishQ" value={dishQ} />
                     <input type="hidden" name="foodQ" value={foodQ} />
+                    <TimezoneOffsetInput />
                     <div className="h-44 w-full overflow-hidden rounded-base bg-background">
                       {dish.image ? (
                         <img
@@ -626,9 +733,14 @@ export default async function MealsPage({
               Foods
             </h4>
           </div>
-          <form method="get" action={dayOffset > 0 ? `/dashboard/${dayOffset}` : "/dashboard"} className="space-y-2">
+          <form
+            method="get"
+            action={dayOffset > 0 ? `/dashboard/${dayOffset}` : "/dashboard"}
+            className="space-y-2"
+          >
             <input type="hidden" name="mealQ" value={mealQ} />
             <input type="hidden" name="dishQ" value={dishQ} />
+            <TimezoneOffsetInput />
             <label
               htmlFor="foodQ"
               className="block text-xs font-semibold text-accent"
@@ -670,6 +782,7 @@ export default async function MealsPage({
                     <input type="hidden" name="mealQ" value={mealQ} />
                     <input type="hidden" name="dishQ" value={dishQ} />
                     <input type="hidden" name="foodQ" value={foodQ} />
+                    <TimezoneOffsetInput />
                     <div className="h-44 w-full overflow-hidden rounded-base bg-background">
                       {food.image ? (
                         <img

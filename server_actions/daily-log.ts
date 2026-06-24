@@ -10,14 +10,24 @@ function getDayNumberFromDate(date: Date): number {
   return Math.floor(date.getTime() / MS_PER_DAY);
 }
 
-function getUTCStartOfDay(dayOffset = 0): Date {
-  const now = new Date();
-  const utcToday = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  );
+function parseTimezoneOffsetMinutes(value: unknown): number {
+  const parsed = Number(value);
 
-  if (!dayOffset) return utcToday;
-  return new Date(utcToday.getTime() - dayOffset * MS_PER_DAY);
+  if (!Number.isFinite(parsed)) return 0;
+  if (!Number.isInteger(parsed)) return 0;
+  if (parsed < -14 * 60 || parsed > 14 * 60) return 0;
+
+  return parsed;
+}
+
+function getUTCStartOfClientDay(dayOffset = 0, tzOffsetMin = 0): Date {
+  const now = Date.now();
+  const localNowMs = now - tzOffsetMin * 60 * 1000;
+  const localDayStartMs = Math.floor(localNowMs / MS_PER_DAY) * MS_PER_DAY;
+  const targetLocalDayStartMs = localDayStartMs - dayOffset * MS_PER_DAY;
+  const utcMs = targetLocalDayStartMs + tzOffsetMin * 60 * 1000;
+
+  return new Date(utcMs);
 }
 
 async function getOrCreateUserDay(userId: string, dayStart: Date) {
@@ -80,7 +90,10 @@ export interface DailyLogItem {
   fat: number;
 }
 
-export async function fetchChosenDate(day = 0): Promise<DailyLogItem[]> {
+export async function fetchChosenDate(
+  day = 0,
+  tzOffsetMinRaw?: number,
+): Promise<DailyLogItem[]> {
   console.log(`Fetching daily log of day ${day}...`);
   const session = await auth();
 
@@ -99,7 +112,8 @@ export async function fetchChosenDate(day = 0): Promise<DailyLogItem[]> {
       return [];
     }
     console.log("Authenticated user ID:", session.user.id);
-    const dayStart = getUTCStartOfDay(day);
+    const tzOffsetMin = parseTimezoneOffsetMinutes(tzOffsetMinRaw);
+    const dayStart = getUTCStartOfClientDay(day, tzOffsetMin);
 
     // Create or get the day record atomically, with fallback for legacy unique key collisions.
     const userDay = await getOrCreateUserDay(session.user.id, dayStart);
@@ -213,6 +227,7 @@ export async function addDailyLogItem(
     fat: number;
   },
   day = 0,
+  tzOffsetMinRaw?: number,
 ): Promise<{ success: boolean; error?: string }> {
   console.log("Adding item to daily log:", data);
   try {
@@ -240,7 +255,8 @@ export async function addDailyLogItem(
       },
     });
 
-    const dayStart = getUTCStartOfDay(day);
+    const tzOffsetMin = parseTimezoneOffsetMinutes(tzOffsetMinRaw);
+    const dayStart = getUTCStartOfClientDay(day, tzOffsetMin);
 
     const userDay = await getOrCreateUserDay(session.user.id, dayStart);
 
