@@ -101,6 +101,7 @@ model Meal {
   name    String
   image   String?
   likes   Int             @default(0)
+  amount  Int             @default(1) // Number of servings
   
   dishes  MealDishes[]
   beloved UsersBelovedMeals[]
@@ -146,12 +147,12 @@ model UserDaysList {
 
 model DailyLog {
   id         Int          @id @default(autoincrement())
-  use_day_id Int
+  user_day_id Int
   dishId     Int?         // Nullable for direct food logging
   foodId     Int?         // Nullable for dish logging
   amount     Int          @default(1)
 
-  day        UserDaysList @relation(fields: [use_day_id], references: [id])
+  day        UserDaysList @relation(fields: [user_day_id], references: [id])
   dish       Dish?        @relation(fields: [dishId], references: [id])
   food       Food?        @relation(fields: [foodId], references: [id])
 }

@@ -163,6 +163,8 @@ export default async function AddMealPage({
       );
     }
 
+    const totalAmount = parsedDishes.reduce((sum, d) => sum + d.amount, 0);
+
     if (imageInput instanceof File && imageInput.size > 0) {
       if (!imageInput.type.startsWith("image/")) {
         redirect("/add-meal?error=Please%20upload%20a%20valid%20image");
@@ -182,6 +184,7 @@ export default async function AddMealPage({
         data: {
           name,
           image,
+          amount: totalAmount,
           dishes: {
             create: parsedDishes.map((dish) => ({
               dish: {

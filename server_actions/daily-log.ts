@@ -148,7 +148,7 @@ export async function fetchChosenDate(
     // Get today's daily logs with related food/dish data
     const logs = await prisma.dailyLog.findMany({
       where: {
-        use_day_id: userDay.id,
+        user_day_id: userDay.id,
       },
       include: {
         food: true,
@@ -284,7 +284,7 @@ export async function addDailyLogItem(
     // Create the daily log entry
     await prisma.dailyLog.create({
       data: {
-        use_day_id: userDay.id,
+        user_day_id: userDay.id,
         foodId: food.id,
         amount: data.amount,
       },
