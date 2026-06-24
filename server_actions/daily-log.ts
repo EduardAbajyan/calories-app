@@ -40,6 +40,17 @@ async function getOrCreateUserDay(userId: string, dayStart: Date) {
     dayNumber,
     dayEnd: dayEnd.toISOString(),
   });
+  const existingByDayNumber = await prisma.userDaysList.findUnique({
+    where: {
+      userId_dayNumber: {
+        userId,
+        dayNumber,
+      },
+    },
+  });
+
+  if (existingByDayNumber) return existingByDayNumber;
+
   // First look for any existing row within the same calendar day (handles
   // legacy rows stored with a different time component).
   const existing = await prisma.userDaysList.findFirst({
@@ -68,6 +79,16 @@ async function getOrCreateUserDay(userId: string, dayStart: Date) {
       "code" in error &&
       (error as { code?: string }).code === "P2002"
     ) {
+      const raceByDayNumber = await prisma.userDaysList.findUnique({
+        where: {
+          userId_dayNumber: {
+            userId,
+            dayNumber,
+          },
+        },
+      });
+      if (raceByDayNumber) return raceByDayNumber;
+
       const race = await prisma.userDaysList.findFirst({
         where: { userId, date: { gte: dayStart, lt: dayEnd } },
         orderBy: { id: "desc" },
