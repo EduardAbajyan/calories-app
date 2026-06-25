@@ -94,7 +94,7 @@ function EditableAmountCell({
     <button
       type="button"
       onClick={() => setIsEditing(true)}
-      className="rounded-lg px-1 py-0.5 text-left transition hover:bg-accent-soft/50"
+      className="inline-flex w-full cursor-pointer items-center rounded-lg px-2 py-1 text-left transition hover:bg-accent-soft/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       aria-label="Edit amount"
       title="Click to edit amount"
     >
@@ -193,7 +193,7 @@ export default function TableComponent({
         </td>
       ),
       amount: (
-        <td className={`w-28 ${metricCellClass}`}>
+        <td className={`w-28 ${metricCellClass} cursor-pointer`}>
           <EditableAmountCell
             logId={item.id}
             amount={item.amount}
