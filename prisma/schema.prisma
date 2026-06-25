@@ -79,7 +79,7 @@ model Dish {
   name    String
   image   String?
   path    String?         // Slug or file path
-  recipe  String?         @db.Text
+  amount  Int             @default(1)
   
   ingredients RecipeContent[]
   meals       MealDishes[]

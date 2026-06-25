@@ -54,7 +54,6 @@ export default async function AddDishPage({
     }
 
     const name = String(formData.get("name") ?? "").trim();
-    const recipe = String(formData.get("recipe") ?? "").trim();
     const imageInput = formData.get("image");
     const foodIdsFromForm = formData.getAll("foodIds");
     const amountsFromForm = formData.getAll("amounts");
@@ -71,6 +70,11 @@ export default async function AddDishPage({
         ingredient.foodId <= 0 ||
         !Number.isInteger(ingredient.amount) ||
         ingredient.amount <= 0,
+    );
+
+    const totalAmount = parsedIngredients.reduce(
+      (sum, ingredient) => sum + ingredient.amount,
+      0,
     );
 
     if (!name) {
@@ -123,7 +127,7 @@ export default async function AddDishPage({
         data: {
           name,
           image,
-          path: recipe || null,
+          amount: totalAmount,
           ingredients: {
             create: parsedIngredients.map(
               (ingredient: { foodId: number; amount: number }) => ({
@@ -175,8 +179,7 @@ export default async function AddDishPage({
               Add dish
             </h1>
             <p className="mt-2 max-w-lg text-sm leading-6 text-foreground/70">
-              Create a dish, add its recipe, and build it from foods you have
-              already logged.
+              Create a dish and build it from foods you have already logged.
             </p>
           </div>
 
@@ -221,22 +224,6 @@ export default async function AddDishPage({
           </div>
 
           <ImageFileInput />
-
-          <div className="space-y-2">
-            <label
-              htmlFor="recipe"
-              className="block text-sm font-medium text-foreground"
-            >
-              Recipe
-            </label>
-            <textarea
-              id="recipe"
-              name="recipe"
-              rows={6}
-              placeholder="Write the cooking steps, seasoning, and any notes here"
-              className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-foreground shadow-sm outline-none transition placeholder:text-foreground/35 focus:border-accent focus:ring-4 focus:ring-accent-soft"
-            />
-          </div>
 
           <DishFoodsBuilder availableFoods={availableFoods} />
 

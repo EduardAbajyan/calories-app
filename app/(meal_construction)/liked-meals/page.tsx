@@ -304,6 +304,7 @@ export default async function LikedMealsPage({
         data: {
           name: food.name,
           image: food.image,
+          amount: 1,
           ingredients: {
             create: {
               food: {

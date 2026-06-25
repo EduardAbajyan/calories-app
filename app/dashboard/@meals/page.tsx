@@ -470,69 +470,83 @@ export default async function MealsPage({
   let foodMatches: FoodMatch[] = [];
 
   try {
-    [mealMatches, dishMatches, foodMatches] = await prisma.$transaction([
-      prisma.meal.findMany({
-        where: {
-          name: {
-            contains: mealQ,
-            mode: "insensitive",
+    mealMatches = await prisma.meal.findMany({
+      where: {
+        name: {
+          contains: mealQ,
+          mode: "insensitive",
+        },
+      },
+      orderBy: [{ likes: "desc" }, { id: "asc" }],
+      take: 24,
+      include: {
+        dishes: {
+          select: {
+            dishId: true,
           },
         },
-        orderBy: [{ likes: "desc" }, { id: "asc" }],
-        take: 24,
-        include: {
-          dishes: {
-            select: {
-              dishId: true,
-            },
-          },
-        },
-      }),
-      prisma.dish.findMany({
-        where: {
-          name: {
-            contains: dishQ,
-            mode: "insensitive",
-          },
-        },
-        orderBy: [{ name: "asc" }, { id: "asc" }],
-        take: 24,
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          ingredients: {
-            select: {
-              id: true,
-            },
-          },
-        },
-      }),
-      prisma.food.findMany({
-        where: {
-          name: {
-            contains: foodQ,
-            mode: "insensitive",
-          },
-        },
-        orderBy: [{ name: "asc" }, { id: "asc" }],
-        take: 24,
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          calories: true,
-          protein: true,
-          carbohydrates: true,
-          fat: true,
-        },
-      }),
-    ]);
+      },
+    });
   } catch (err) {
-    logMealsDashboardError("Failed to load meals dashboard data", err, {
+    logMealsDashboardError("Failed to load meal matches", err, {
       userId: session.user.id,
       mealQ,
+      tzOffsetMin: parseTimezoneOffsetMinutes(params.tzOffsetMin),
+    });
+  }
+
+  try {
+    dishMatches = await prisma.dish.findMany({
+      where: {
+        name: {
+          contains: dishQ,
+          mode: "insensitive",
+        },
+      },
+      orderBy: [{ name: "asc" }, { id: "asc" }],
+      take: 24,
+      select: {
+        id: true,
+        name: true,
+        image: true,
+        ingredients: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+  } catch (err) {
+    logMealsDashboardError("Failed to load dish matches", err, {
+      userId: session.user.id,
       dishQ,
+      tzOffsetMin: parseTimezoneOffsetMinutes(params.tzOffsetMin),
+    });
+  }
+
+  try {
+    foodMatches = await prisma.food.findMany({
+      where: {
+        name: {
+          contains: foodQ,
+          mode: "insensitive",
+        },
+      },
+      orderBy: [{ name: "asc" }, { id: "asc" }],
+      take: 24,
+      select: {
+        id: true,
+        name: true,
+        image: true,
+        calories: true,
+        protein: true,
+        carbohydrates: true,
+        fat: true,
+      },
+    });
+  } catch (err) {
+    logMealsDashboardError("Failed to load food matches", err, {
+      userId: session.user.id,
       foodQ,
       tzOffsetMin: parseTimezoneOffsetMinutes(params.tzOffsetMin),
     });
