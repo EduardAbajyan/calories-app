@@ -191,7 +191,11 @@ export default async function MealsPage({
           amount: safeAmount,
         },
       });
-    } catch {
+    } catch (err) {
+      console.error(
+        "DB error adding food:",
+        err instanceof Error ? err.message : err,
+      );
       redirect(
         buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
           error: "Failed to add food",
@@ -261,7 +265,11 @@ export default async function MealsPage({
           amount: safeServings,
         },
       });
-    } catch {
+    } catch (err) {
+      console.error(
+        "DB error adding dish:",
+        err instanceof Error ? err.message : err,
+      );
       redirect(
         buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
           error: "Failed to add dish",
@@ -333,7 +341,11 @@ export default async function MealsPage({
           amount: 1,
         })),
       });
-    } catch {
+    } catch (err) {
+      console.error(
+        "DB error adding meal contents:",
+        err instanceof Error ? err.message : err,
+      );
       redirect(
         buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
           error: "Failed to add meal",
