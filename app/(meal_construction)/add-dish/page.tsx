@@ -54,6 +54,7 @@ export default async function AddDishPage({
     }
 
     const name = String(formData.get("name") ?? "").trim();
+    const pathValue = String(formData.get("path") ?? "").trim();
     const imageInput = formData.get("image");
     const foodIdsFromForm = formData.getAll("foodIds");
     const amountsFromForm = formData.getAll("amounts");
@@ -127,6 +128,7 @@ export default async function AddDishPage({
         data: {
           name,
           image,
+          path: pathValue || null,
           amount: totalAmount,
           ingredients: {
             create: parsedIngredients.map(
@@ -224,6 +226,25 @@ export default async function AddDishPage({
           </div>
 
           <ImageFileInput />
+
+          <div className="space-y-2 rounded-3xl border border-border bg-surface-elevated p-4 shadow-sm">
+            <label
+              htmlFor="path"
+              className="block text-sm font-medium text-foreground"
+            >
+              Recipe (optional)
+            </label>
+            <textarea
+              id="path"
+              name="path"
+              rows={4}
+              placeholder="Write the recipe instructions for this dish"
+              className="w-full resize-y rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-foreground/35 focus:border-accent focus:ring-4 focus:ring-accent-soft"
+            />
+            <p className="text-xs text-foreground/60">
+              This recipe will be saved in the dish path field.
+            </p>
+          </div>
 
           <DishFoodsBuilder availableFoods={availableFoods} />
 
