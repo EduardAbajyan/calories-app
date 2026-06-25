@@ -1,5 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
+import { logMealsDashboardError } from "@/app/dashboard/@meals/logging";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -18,9 +20,7 @@ type MealsSearchParams = {
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-type TransactionClient = Parameters<
-  Extract<Parameters<typeof prisma.$transaction>[0], (arg: any) => any>
->[0];
+type UserDaysListClient = Pick<Prisma.TransactionClient, "userDaysList">;
 
 function getDayNumberFromDate(date: Date): number {
   return Math.floor(date.getTime() / MS_PER_DAY);
@@ -63,11 +63,15 @@ function formatDateDisplayForOffset(date: Date, tzOffsetMin: number): string {
   });
 }
 
-async function getOrCreateUserDay(userId: string, dayStart: Date) {
+async function getOrCreateUserDayWithClient(
+  userId: string,
+  dayStart: Date,
+  db: UserDaysListClient,
+) {
   const dayNumber = getDayNumberFromDate(dayStart);
   const dayEnd = new Date(dayStart.getTime() + MS_PER_DAY);
 
-  const existingByDayNumber = await prisma.userDaysList.findUnique({
+  const existingByDayNumber = await db.userDaysList.findUnique({
     where: {
       userId_dayNumber: {
         userId,
@@ -78,7 +82,7 @@ async function getOrCreateUserDay(userId: string, dayStart: Date) {
 
   if (existingByDayNumber) return existingByDayNumber;
 
-  const existing = await prisma.userDaysList.findFirst({
+  const existing = await db.userDaysList.findFirst({
     where: {
       userId,
       date: { gte: dayStart, lt: dayEnd },
@@ -89,7 +93,7 @@ async function getOrCreateUserDay(userId: string, dayStart: Date) {
   if (existing) return existing;
 
   try {
-    return await prisma.userDaysList.create({
+    return await db.userDaysList.create({
       data: { userId, dayNumber, date: dayStart },
     });
   } catch (error: unknown) {
@@ -99,7 +103,7 @@ async function getOrCreateUserDay(userId: string, dayStart: Date) {
       "code" in error &&
       (error as { code?: string }).code === "P2002"
     ) {
-      const raceByDayNumber = await prisma.userDaysList.findUnique({
+      const raceByDayNumber = await db.userDaysList.findUnique({
         where: {
           userId_dayNumber: {
             userId,
@@ -109,7 +113,7 @@ async function getOrCreateUserDay(userId: string, dayStart: Date) {
       });
       if (raceByDayNumber) return raceByDayNumber;
 
-      const race = await prisma.userDaysList.findFirst({
+      const race = await db.userDaysList.findFirst({
         where: { userId, date: { gte: dayStart, lt: dayEnd } },
         orderBy: { id: "desc" },
       });
@@ -222,25 +226,31 @@ export default async function MealsPage({
       ? Math.max(1, Math.round(grams))
       : 100;
 
-    const writeDayStart = getUTCStartOfClientDay(dayOffset, nextTzOffsetMin);
-    const userDay = await getOrCreateUserDay(
-      activeSession.user.id,
-      writeDayStart,
-    );
-
     try {
-      await prisma.dailyLog.create({
-        data: {
-          user_day_id: userDay.id,
-          foodId,
-          amount: safeAmount,
-        },
+      await prisma.$transaction(async (tx) => {
+        const writeDayStart = getUTCStartOfClientDay(dayOffset, nextTzOffsetMin);
+        const userDay = await getOrCreateUserDayWithClient(
+          activeSession.user.id,
+          writeDayStart,
+          tx,
+        );
+
+        await tx.dailyLog.create({
+          data: {
+            user_day_id: userDay.id,
+            foodId,
+            amount: safeAmount,
+          },
+        });
       });
     } catch (err) {
-      console.error(
-        "DB error adding food:",
-        err instanceof Error ? err.message : err,
-      );
+      logMealsDashboardError("Failed to add food to daily log", err, {
+        userId: activeSession.user.id,
+        foodId,
+        amount: safeAmount,
+        dayOffset,
+        tzOffsetMin: nextTzOffsetMin,
+      });
       redirect(
         buildDashboardHref(
           dayOffset,
@@ -303,10 +313,33 @@ export default async function MealsPage({
       );
     }
 
-    const dish = await prisma.dish.findUnique({
-      where: { id: dishId },
-      select: { id: true },
-    });
+    let dish: { id: number } | null;
+
+    try {
+      dish = await prisma.dish.findUnique({
+        where: { id: dishId },
+        select: { id: true },
+      });
+    } catch (err) {
+      logMealsDashboardError("Failed to load dish before add", err, {
+        userId: activeSession.user.id,
+        dishId,
+        dayOffset,
+        tzOffsetMin: nextTzOffsetMin,
+      });
+      redirect(
+        buildDashboardHref(
+          dayOffset,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Failed to add dish",
+          },
+        ),
+      );
+    }
 
     if (!dish) {
       redirect(
@@ -327,25 +360,31 @@ export default async function MealsPage({
       ? Math.max(1, Math.round(servings))
       : 1;
 
-    const writeDayStart = getUTCStartOfClientDay(dayOffset, nextTzOffsetMin);
-    const userDay = await getOrCreateUserDay(
-      activeSession.user.id,
-      writeDayStart,
-    );
-
     try {
-      await prisma.dailyLog.create({
-        data: {
-          user_day_id: userDay.id,
-          dishId,
-          amount: safeServings,
-        },
+      await prisma.$transaction(async (tx) => {
+        const writeDayStart = getUTCStartOfClientDay(dayOffset, nextTzOffsetMin);
+        const userDay = await getOrCreateUserDayWithClient(
+          activeSession.user.id,
+          writeDayStart,
+          tx,
+        );
+
+        await tx.dailyLog.create({
+          data: {
+            user_day_id: userDay.id,
+            dishId,
+            amount: safeServings,
+          },
+        });
       });
     } catch (err) {
-      console.error(
-        "DB error adding dish:",
-        err instanceof Error ? err.message : err,
-      );
+      logMealsDashboardError("Failed to add dish to daily log", err, {
+        userId: activeSession.user.id,
+        dishId,
+        amount: safeServings,
+        dayOffset,
+        tzOffsetMin: nextTzOffsetMin,
+      });
       redirect(
         buildDashboardHref(
           dayOffset,
@@ -407,17 +446,40 @@ export default async function MealsPage({
       );
     }
 
-    const meal = await prisma.meal.findUnique({
-      where: { id: mealId },
-      select: {
-        id: true,
-        dishes: {
-          select: {
-            dishId: true,
+    let meal: { id: number; dishes: Array<{ dishId: number }> } | null;
+
+    try {
+      meal = await prisma.meal.findUnique({
+        where: { id: mealId },
+        select: {
+          id: true,
+          dishes: {
+            select: {
+              dishId: true,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (err) {
+      logMealsDashboardError("Failed to load meal before add", err, {
+        userId: activeSession.user.id,
+        mealId,
+        dayOffset,
+        tzOffsetMin: nextTzOffsetMin,
+      });
+      redirect(
+        buildDashboardHref(
+          dayOffset,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Failed to add meal",
+          },
+        ),
+      );
+    }
 
     if (!meal || meal.dishes.length === 0) {
       redirect(
@@ -434,25 +496,31 @@ export default async function MealsPage({
       );
     }
 
-    const writeDayStart = getUTCStartOfClientDay(dayOffset, nextTzOffsetMin);
-    const userDay = await getOrCreateUserDay(
-      activeSession.user.id,
-      writeDayStart,
-    );
-
     try {
-      await prisma.dailyLog.createMany({
-        data: meal.dishes.map((dish: { dishId: number }) => ({
-          user_day_id: userDay.id,
-          dishId: dish.dishId,
-          amount: 1,
-        })),
+      await prisma.$transaction(async (tx) => {
+        const writeDayStart = getUTCStartOfClientDay(dayOffset, nextTzOffsetMin);
+        const userDay = await getOrCreateUserDayWithClient(
+          activeSession.user.id,
+          writeDayStart,
+          tx,
+        );
+
+        await tx.dailyLog.createMany({
+          data: meal.dishes.map((dish) => ({
+            user_day_id: userDay.id,
+            dishId: dish.dishId,
+            amount: 1,
+          })),
+        });
       });
     } catch (err) {
-      console.error(
-        "DB error adding meal contents:",
-        err instanceof Error ? err.message : err,
-      );
+      logMealsDashboardError("Failed to add meal contents to daily log", err, {
+        userId: activeSession.user.id,
+        mealId,
+        dayOffset,
+        tzOffsetMin: nextTzOffsetMin,
+        dishCount: meal.dishes.length,
+      });
       redirect(
         buildDashboardHref(
           dayOffset,
@@ -481,7 +549,11 @@ export default async function MealsPage({
         },
       });
     } catch (error) {
-      console.error("Failed to increment consumed counter:", error);
+      logMealsDashboardError("Failed to increment beloved meal consumption", error, {
+        userId: activeSession.user.id,
+        mealId: meal.id,
+        dayOffset,
+      });
     }
 
     revalidateDashboardTable(dayOffset);
@@ -500,64 +572,80 @@ export default async function MealsPage({
     );
   }
 
-  const mealMatches = await prisma.meal.findMany({
-    where: {
-      name: {
-        contains: mealQ,
-        mode: "insensitive",
-      },
-    },
-    orderBy: [{ likes: "desc" }, { id: "asc" }],
-    take: 24,
-    include: {
-      dishes: {
-        select: {
-          dishId: true,
-        },
-      },
-    },
-  });
+  let mealMatches;
+  let dishMatches;
+  let foodMatches;
 
-  const dishMatches = await prisma.dish.findMany({
-    where: {
-      name: {
-        contains: dishQ,
-        mode: "insensitive",
-      },
-    },
-    orderBy: [{ name: "asc" }, { id: "asc" }],
-    take: 24,
-    select: {
-      id: true,
-      name: true,
-      image: true,
-      ingredients: {
+  try {
+    [mealMatches, dishMatches, foodMatches] = await prisma.$transaction([
+      prisma.meal.findMany({
+        where: {
+          name: {
+            contains: mealQ,
+            mode: "insensitive",
+          },
+        },
+        orderBy: [{ likes: "desc" }, { id: "asc" }],
+        take: 24,
+        include: {
+          dishes: {
+            select: {
+              dishId: true,
+            },
+          },
+        },
+      }),
+      prisma.dish.findMany({
+        where: {
+          name: {
+            contains: dishQ,
+            mode: "insensitive",
+          },
+        },
+        orderBy: [{ name: "asc" }, { id: "asc" }],
+        take: 24,
         select: {
           id: true,
+          name: true,
+          image: true,
+          ingredients: {
+            select: {
+              id: true,
+            },
+          },
         },
-      },
-    },
-  });
-
-  const foodMatches = await prisma.food.findMany({
-    where: {
-      name: {
-        contains: foodQ,
-        mode: "insensitive",
-      },
-    },
-    orderBy: [{ name: "asc" }, { id: "asc" }],
-    take: 24,
-    select: {
-      id: true,
-      name: true,
-      image: true,
-      calories: true,
-      protein: true,
-      carbohydrates: true,
-      fat: true,
-    },
-  });
+      }),
+      prisma.food.findMany({
+        where: {
+          name: {
+            contains: foodQ,
+            mode: "insensitive",
+          },
+        },
+        orderBy: [{ name: "asc" }, { id: "asc" }],
+        take: 24,
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          calories: true,
+          protein: true,
+          carbohydrates: true,
+          fat: true,
+        },
+      }),
+    ]);
+  } catch (err) {
+    logMealsDashboardError("Failed to load meals dashboard data", err, {
+      userId: session.user.id,
+      dayOffset,
+      mealQ,
+      dishQ,
+      foodQ,
+      tzOffsetMin,
+    });
+    throw err;
+  }
 
   return (
     <section className="relative w-full rounded-[28px] border border-border/70 bg-surface/80 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.12)] backdrop-blur-xl">
