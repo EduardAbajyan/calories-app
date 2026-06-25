@@ -996,8 +996,8 @@ export default async function MealsPage({
                         {food.name}
                       </p>
                       <p className="text-xs text-foreground/55">
-                        {food.calories} kcal • P {food.protein} • C{" "}
-                        {food.carbohydrates} • F {food.fat}
+                        {food.calories} kcal • P {food.protein / 10} • C{" "}
+                        {food.carbohydrates / 10} • F {food.fat / 10}
                       </p>
                     </div>
                     <FormSubmitButton
