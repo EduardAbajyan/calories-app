@@ -326,40 +326,12 @@ export default async function MealsPage({
     const userDay = await getOrCreateUserDay(activeSession.user.id, dayStart);
 
     try {
-      await prisma.$transaction(async (tx: TransactionClient) => {
-        await tx.dailyLog.createMany({
-          data: meal.dishes.map((dish: { dishId: number }) => ({
-            user_day_id: userDay.id,
-            dishId: dish.dishId,
-            amount: 1,
-          })),
-        });
-
-        const userMeal = await tx.usersBelovedMeals.findUnique({
-          where: {
-            userId_mealId: {
-              userId: activeSession.user.id,
-              mealId: meal.id,
-            },
-          },
-          select: { userId: true, mealId: true },
-        });
-
-        if (userMeal) {
-          await tx.usersBelovedMeals.update({
-            where: {
-              userId_mealId: {
-                userId: activeSession.user.id,
-                mealId: meal.id,
-              },
-            },
-            data: {
-              countsConsumed: {
-                increment: 1,
-              },
-            },
-          });
-        }
+      await prisma.dailyLog.createMany({
+        data: meal.dishes.map((dish: { dishId: number }) => ({
+          user_day_id: userDay.id,
+          dishId: dish.dishId,
+          amount: 1,
+        })),
       });
     } catch {
       redirect(
@@ -367,6 +339,23 @@ export default async function MealsPage({
           error: "Failed to add meal",
         }),
       );
+    }
+
+    // Best-effort update: do not fail the add flow if this counter update fails.
+    try {
+      await prisma.usersBelovedMeals.updateMany({
+        where: {
+          userId: activeSession.user.id,
+          mealId: meal.id,
+        },
+        data: {
+          countsConsumed: {
+            increment: 1,
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Failed to increment consumed counter:", error);
     }
 
     revalidateDashboardTable();
