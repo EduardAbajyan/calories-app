@@ -180,7 +180,7 @@ export default function TableComponent({
           onClick={() => deleteHandler(item.id)}
         >
           <div className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface-elevated shadow-sm">
-            ✓
+            ×
           </div>
         </td>
       ),
