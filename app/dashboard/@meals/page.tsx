@@ -18,6 +18,31 @@ type MealsSearchParams = {
   error?: string;
 };
 
+type MealMatch = {
+  id: number;
+  name: string;
+  image: string | null;
+  likes: number;
+  dishes: { dishId: number }[];
+};
+
+type DishMatch = {
+  id: number;
+  name: string;
+  image: string | null;
+  ingredients: { id: number }[];
+};
+
+type FoodMatch = {
+  id: number;
+  name: string;
+  image: string | null;
+  calories: number;
+  protein: number;
+  carbohydrates: number;
+  fat: number;
+};
+
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 type UserDaysListClient = Pick<Prisma.TransactionClient, "userDaysList">;
@@ -440,9 +465,9 @@ export default async function MealsPage({
     );
   }
 
-  let mealMatches;
-  let dishMatches;
-  let foodMatches;
+  let mealMatches: MealMatch[] = [];
+  let dishMatches: DishMatch[] = [];
+  let foodMatches: FoodMatch[] = [];
 
   try {
     [mealMatches, dishMatches, foodMatches] = await prisma.$transaction([
@@ -511,7 +536,6 @@ export default async function MealsPage({
       foodQ,
       tzOffsetMin: parseTimezoneOffsetMinutes(params.tzOffsetMin),
     });
-    throw err;
   }
 
   return (
