@@ -334,3 +334,52 @@ export async function deleteDailyLogItem(
     return { success: false };
   }
 }
+
+export async function updateDailyLogItemAmount(
+  logId: number,
+  amount: number,
+): Promise<{ success: boolean; error?: string }> {
+  console.log("Updating daily log item amount:", { logId, amount });
+
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    if (!Number.isInteger(amount) || amount <= 0) {
+      return { success: false, error: "Amount must be a positive integer" };
+    }
+
+    const existingLog = await prisma.dailyLog.findFirst({
+      where: {
+        id: logId,
+        day: {
+          userId: session.user.id,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!existingLog) {
+      return { success: false, error: "Log item not found" };
+    }
+
+    await prisma.dailyLog.update({
+      where: {
+        id: logId,
+      },
+      data: {
+        amount,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating daily log item amount:", error);
+    return { success: false, error: "Failed to update item amount" };
+  }
+}

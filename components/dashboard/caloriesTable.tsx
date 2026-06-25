@@ -5,8 +5,103 @@ import {
   fetchChosenDate,
   addDailyLogItem,
   deleteDailyLogItem,
+  updateDailyLogItemAmount,
   type DailyLogItem,
 } from "@/server_actions/daily-log";
+
+function EditableAmountCell({
+  logId,
+  amount,
+  onSaved,
+}: {
+  logId: number;
+  amount: number;
+  onSaved: () => Promise<void>;
+}): JSX.Element {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftAmount, setDraftAmount] = useState(String(amount));
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (!isEditing) {
+      setDraftAmount(String(amount));
+    }
+  }, [amount, isEditing]);
+
+  async function saveAmount() {
+    const parsed = Number(draftAmount);
+
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      setDraftAmount(String(amount));
+      setIsEditing(false);
+      return;
+    }
+
+    if (parsed === amount) {
+      setIsEditing(false);
+      return;
+    }
+
+    setIsSaving(true);
+    const result = await updateDailyLogItemAmount(logId, parsed);
+    setIsSaving(false);
+
+    if (!result.success) {
+      console.error("Failed to update amount", result.error);
+      setDraftAmount(String(amount));
+      setIsEditing(false);
+      return;
+    }
+
+    setIsEditing(false);
+    await onSaved();
+  }
+
+  if (isEditing) {
+    return (
+      <input
+        type="number"
+        min={1}
+        step={1}
+        value={draftAmount}
+        onChange={(event) => setDraftAmount(event.target.value)}
+        onBlur={() => {
+          if (!isSaving) {
+            void saveAmount();
+          }
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            if (!isSaving) {
+              void saveAmount();
+            }
+          }
+
+          if (event.key === "Escape") {
+            event.preventDefault();
+            setDraftAmount(String(amount));
+            setIsEditing(false);
+          }
+        }}
+        autoFocus
+        className="w-20 rounded-xl border border-border bg-surface-elevated px-2 py-1 text-sm text-foreground outline-none focus:border-accent focus:ring-4 focus:ring-accent-soft"
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setIsEditing(true)}
+      className="rounded-lg px-1 py-0.5 text-left transition hover:bg-accent-soft/50"
+      aria-label="Edit amount"
+      title="Click to edit amount"
+    >
+      {amount}g
+    </button>
+  );
+}
 
 export default function TableComponent({
   day,
@@ -74,50 +169,60 @@ export default function TableComponent({
     };
   }>({});
 
+  async function refreshExistingRows() {
+    const dailyLogData = await fetchChosenDate(day, tzOffsetMin);
+
+    const formattedData = dailyLogData.map((item: DailyLogItem) => ({
+      id: item.id,
+      checkbox: (
+        <td
+          className={`${deleteCellClass} cursor-pointer`}
+          onClick={() => deleteHandler(item.id)}
+        >
+          <div className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface-elevated shadow-sm">
+            ✓
+          </div>
+        </td>
+      ),
+      name: (
+        <td className={`w-1/3 min-w-56 font-medium ${dataCellClass}`}>
+          <div className="flex items-center gap-3">
+            {renderItemAvatar(item.name, item.image)}
+            <span className="min-w-0 truncate">{item.name}</span>
+          </div>
+        </td>
+      ),
+      amount: (
+        <td className={`w-28 ${metricCellClass}`}>
+          <EditableAmountCell
+            logId={item.id}
+            amount={item.amount}
+            onSaved={refreshExistingRows}
+          />
+        </td>
+      ),
+      calories: (
+        <td className={`w-32 ${metricCellClass}`}>{item.calories} cal</td>
+      ),
+      protein: <td className={`w-24 ${metricCellClass}`}>{item.protein}g</td>,
+      carbohydrates: (
+        <td className={`w-32 ${metricCellClass}`}>{item.carbohydrates}g</td>
+      ),
+      fat: <td className={`w-20 ${metricCellClass}`}>{item.fat}g</td>,
+    }));
+
+    setSet(formattedData);
+    if (dailyLogData.length > 0) {
+      setId(Math.max(...dailyLogData.map((item) => item.id)));
+    }
+  }
+
   // Fetch today's data from database
   useEffect(() => {
     async function fetchTodaysData() {
       try {
         setLoading(true);
-        const dailyLogData = await fetchChosenDate(day, tzOffsetMin);
-
-        const formattedData = dailyLogData.map((item: DailyLogItem) => ({
-          id: item.id,
-          checkbox: (
-            <td
-              className={`${deleteCellClass} cursor-pointer`}
-              onClick={() => deleteHandler(item.id)}
-            >
-              <div className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface-elevated shadow-sm">
-                ✓
-              </div>
-            </td>
-          ),
-          name: (
-            <td className={`w-1/3 min-w-56 font-medium ${dataCellClass}`}>
-              <div className="flex items-center gap-3">
-                {renderItemAvatar(item.name, item.image)}
-                <span className="min-w-0 truncate">{item.name}</span>
-              </div>
-            </td>
-          ),
-          amount: <td className={`w-28 ${metricCellClass}`}>{item.amount}g</td>,
-          calories: (
-            <td className={`w-32 ${metricCellClass}`}>{item.calories} cal</td>
-          ),
-          protein: (
-            <td className={`w-24 ${metricCellClass}`}>{item.protein}g</td>
-          ),
-          carbohydrates: (
-            <td className={`w-32 ${metricCellClass}`}>{item.carbohydrates}g</td>
-          ),
-          fat: <td className={`w-20 ${metricCellClass}`}>{item.fat}g</td>,
-        }));
-
-        setSet(formattedData);
-        if (dailyLogData.length > 0) {
-          setId(Math.max(...dailyLogData.map((item) => item.id)));
-        }
+        await refreshExistingRows();
       } catch (error) {
         console.error("Error fetching daily log:", error);
         setSet([]);
@@ -386,48 +491,10 @@ export default function TableComponent({
 
       if (allSuccess) {
         // Refresh the data
-        const dailyLogData = await fetchChosenDate(Number(day), tzOffsetMin);
-        const formattedData = dailyLogData.map((item: DailyLogItem) => ({
-          id: item.id,
-          checkbox: (
-            <td
-              className={`${deleteCellClass} cursor-pointer`}
-              onClick={() => deleteHandler(item.id)}
-            >
-              <div className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface-elevated shadow-sm">
-                ×
-              </div>
-            </td>
-          ),
-          name: (
-            <td className={`w-1/3 min-w-56 font-medium ${dataCellClass}`}>
-              <div className="flex items-center gap-3">
-                {renderItemAvatar(item.name, item.image)}
-                <span className="min-w-0 truncate">{item.name}</span>
-              </div>
-            </td>
-          ),
-          amount: <td className={`w-28 ${metricCellClass}`}>{item.amount}g</td>,
-          calories: (
-            <td className={`w-32 ${metricCellClass}`}>{item.calories} cal</td>
-          ),
-          protein: (
-            <td className={`w-24 ${metricCellClass}`}>{item.protein}g</td>
-          ),
-          carbohydrates: (
-            <td className={`w-32 ${metricCellClass}`}>{item.carbohydrates}g</td>
-          ),
-          fat: <td className={`w-20 ${metricCellClass}`}>{item.fat}g</td>,
-        }));
-
-        setSet(formattedData);
+        await refreshExistingRows();
         setNewItems({});
         setNewItemsCount(0);
         setSaveButton(false);
-
-        if (dailyLogData.length > 0) {
-          setId(Math.max(...dailyLogData.map((item) => item.id)));
-        }
       }
     } catch (error) {
       console.error("Error saving items:", error);
