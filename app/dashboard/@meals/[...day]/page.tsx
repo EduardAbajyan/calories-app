@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
+import { logMealsDashboardError } from "@/app/dashboard/@meals/logging";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -19,7 +20,7 @@ type MealsSearchParams = {
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-type UserDayClient = Pick<Prisma.TransactionClient, "userDaysList">;
+type UserDaysListClient = Pick<Prisma.TransactionClient, "userDaysList">;
 
 function getDayNumberFromDate(date: Date): number {
   return Math.floor(date.getTime() / MS_PER_DAY);
@@ -65,7 +66,7 @@ function formatDateDisplayForOffset(date: Date, tzOffsetMin: number): string {
 async function getOrCreateUserDayWithClient(
   userId: string,
   dayStart: Date,
-  db: UserDayClient,
+  db: UserDaysListClient,
 ) {
   const dayNumber = getDayNumberFromDate(dayStart);
   const dayEnd = new Date(dayStart.getTime() + MS_PER_DAY);
@@ -157,41 +158,6 @@ function revalidateDashboardTable(dayOffset: number) {
 
 function getRefreshKey() {
   return Date.now().toString();
-}
-
-function getErrorDigest(error: unknown) {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "digest" in error &&
-    typeof (error as { digest?: unknown }).digest === "string"
-  ) {
-    return (error as { digest: string }).digest;
-  }
-
-  return undefined;
-}
-
-function logMealsDashboardError(
-  action: string,
-  error: unknown,
-  context: Record<string, unknown> = {},
-) {
-  if (error instanceof Error) {
-    console.error(`[dashboard/@meals] ${action}`, {
-      ...context,
-      name: error.name,
-      message: error.message,
-      digest: getErrorDigest(error),
-      stack: error.stack,
-    });
-    return;
-  }
-
-  console.error(`[dashboard/@meals] ${action}`, {
-    ...context,
-    error,
-  });
 }
 
 export default async function MealsPage({
