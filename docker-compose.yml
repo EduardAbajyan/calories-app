@@ -1,6 +1,9 @@
 services:
   calories:
-    build: .
+    build:
+      context: .
+      args:
+        NODE_OPTIONS: --max-old-space-size=1536
     container_name: calories_app
     restart: always
     ports:
