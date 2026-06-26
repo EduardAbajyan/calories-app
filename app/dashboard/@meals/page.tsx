@@ -746,7 +746,11 @@ export default async function MealsPage({
                 >
                   <form action={addDishToToday} className="flex flex-col gap-3">
                     <input type="hidden" name="dishId" value={dish.id} />
-                    <input type="hidden" name="servings" value="1" />
+                    <input
+                      type="hidden"
+                      name="servings"
+                      value={dish.amount ?? "1"}
+                    />
                     <input type="hidden" name="mealQ" value={mealQ} />
                     <input type="hidden" name="dishQ" value={dishQ} />
                     <input type="hidden" name="foodQ" value={foodQ} />
