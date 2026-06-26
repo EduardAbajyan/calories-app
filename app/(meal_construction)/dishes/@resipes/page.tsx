@@ -1,7 +1,7 @@
-import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { getCloudinaryImageUrl } from "@/lib/cloudinary-image";
+import PendingNavigationLink from "@/components/pending-navigation-link";
 
 type ResipesSearchParams = {
   recipeQ?: string;
@@ -63,7 +63,10 @@ export default async function ResipesPage({
           name="dishId"
           value={Number.isInteger(selectedDishId) ? selectedDishId : ""}
         />
-        <label htmlFor="recipeQ" className="block text-xs font-semibold text-accent">
+        <label
+          htmlFor="recipeQ"
+          className="block text-xs font-semibold text-accent"
+        >
           Find a dish by name
         </label>
         <div className="group flex gap-3 rounded-xl border border-border bg-surface p-3 shadow-sm">
@@ -104,13 +107,14 @@ export default async function ResipesPage({
 
             return (
               <li key={dish.id}>
-                <Link
+                <PendingNavigationLink
                   href={href}
                   className={`block rounded-2xl border p-3 transition ${
                     isActive
                       ? "border-accent bg-accent-soft/30"
                       : "border-border bg-surface-elevated hover:border-border-strong"
                   }`}
+                  pendingClassName="pointer-events-none border-accent/70 bg-accent-soft/45 opacity-80"
                 >
                   <div className="relative mb-3 h-36 w-full overflow-hidden rounded-xl bg-background">
                     {dish.image ? (
@@ -138,7 +142,7 @@ export default async function ResipesPage({
                     {dish.ingredients.length === 1 ? "" : "s"} •{" "}
                     {Math.round(totalCalories)} kcal
                   </p>
-                </Link>
+                </PendingNavigationLink>
               </li>
             );
           })}

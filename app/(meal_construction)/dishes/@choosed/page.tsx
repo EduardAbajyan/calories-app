@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import Link from "next/link";
 import Image from "next/image";
 import { getCloudinaryImageUrl } from "@/lib/cloudinary-image";
+import PendingNavigationLink from "@/components/pending-navigation-link";
 
 type ChoosedSearchParams = {
   dishId?: string;
@@ -89,11 +89,14 @@ export default async function ChoosedPage({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 sm:px-8">
-      <Link
+      <PendingNavigationLink
         href={closeHref}
         aria-label="Close dish spotlight"
         className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
-      />
+        pendingClassName="pointer-events-none bg-black/55"
+      >
+        <span className="sr-only">Close spotlight</span>
+      </PendingNavigationLink>
 
       <section className="relative z-10 max-h-[88vh] w-full max-w-3xl overflow-y-auto rounded-[30px] border border-border/80 bg-[radial-gradient(circle_at_top_left,var(--color-accent-soft),transparent_38%),linear-gradient(180deg,var(--color-surface)_0%,var(--color-surface-elevated)_100%)] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.3)] backdrop-blur-xl">
         <div className="mb-5 flex items-start justify-between gap-3">
@@ -109,12 +112,14 @@ export default async function ChoosedPage({
             </p>
           </div>
 
-          <Link
+          <PendingNavigationLink
             href={closeHref}
             className="inline-flex items-center rounded-full border border-border bg-surface-elevated px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-foreground transition hover:border-accent hover:text-accent"
+            pendingClassName="pointer-events-none opacity-70"
+            pendingChildren="Closing..."
           >
             Close
-          </Link>
+          </PendingNavigationLink>
         </div>
 
         <div className="relative mb-5 h-52 w-full overflow-hidden rounded-2xl border border-border bg-background">
