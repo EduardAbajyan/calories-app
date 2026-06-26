@@ -4,7 +4,6 @@ WORKDIR /app
 
 ARG NODE_OPTIONS=--max-old-space-size=1536
 
-ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 # Prevent host OOM kills during next build on smaller machines.
 ENV NODE_OPTIONS=${NODE_OPTIONS}
