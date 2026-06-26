@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import Image from "next/image";
+import { getCloudinaryImageUrl } from "@/lib/cloudinary-image";
 
 type ChoosedSearchParams = {
   dishId?: string;
@@ -115,12 +117,17 @@ export default async function ChoosedPage({
           </Link>
         </div>
 
-        <div className="mb-5 h-52 w-full overflow-hidden rounded-2xl border border-border bg-background">
+        <div className="relative mb-5 h-52 w-full overflow-hidden rounded-2xl border border-border bg-background">
           {dish.image ? (
-            <img
-              src={dish.image}
+            <Image
+              src={getCloudinaryImageUrl(dish.image, {
+                width: 1200,
+                height: 416,
+              })}
               alt={dish.name}
-              className="h-full w-full object-cover"
+              fill
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-sm text-foreground/45">
@@ -134,7 +141,9 @@ export default async function ChoosedPage({
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
               Dish weight
             </p>
-            <p className="mt-1 text-lg font-semibold text-foreground">{dish.amount} g</p>
+            <p className="mt-1 text-lg font-semibold text-foreground">
+              {dish.amount} g
+            </p>
           </div>
           <div className="rounded-2xl border border-border bg-surface/85 px-4 py-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
@@ -151,10 +160,16 @@ export default async function ChoosedPage({
             Macros per dish
           </p>
           <p className="text-sm text-foreground/80">
-            {Math.round(totals.calories)} kcal • P {(totals.protein / 10).toFixed(1)} • C {(totals.carbohydrates / 10).toFixed(1)} • F {(totals.fat / 10).toFixed(1)}
+            {Math.round(totals.calories)} kcal • P{" "}
+            {(totals.protein / 10).toFixed(1)} • C{" "}
+            {(totals.carbohydrates / 10).toFixed(1)} • F{" "}
+            {(totals.fat / 10).toFixed(1)}
           </p>
           <p className="mt-2 text-xs text-foreground/60">
-            Per 100g: {Math.round(per100.calories)} kcal • P {(per100.protein / 10).toFixed(1)} • C {(per100.carbohydrates / 10).toFixed(1)} • F {(per100.fat / 10).toFixed(1)}
+            Per 100g: {Math.round(per100.calories)} kcal • P{" "}
+            {(per100.protein / 10).toFixed(1)} • C{" "}
+            {(per100.carbohydrates / 10).toFixed(1)} • F{" "}
+            {(per100.fat / 10).toFixed(1)}
           </p>
         </div>
 
@@ -174,7 +189,9 @@ export default async function ChoosedPage({
                   <span className="font-medium text-foreground">
                     {ingredient.food.name}
                   </span>
-                  <span className="text-foreground/65">{ingredient.amount} g</span>
+                  <span className="text-foreground/65">
+                    {ingredient.amount} g
+                  </span>
                 </li>
               ))}
             </ul>

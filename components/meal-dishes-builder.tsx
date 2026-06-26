@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
+import { getCloudinaryImageUrl } from "@/lib/cloudinary-image";
 
 type DishOption = {
   id: number;
@@ -174,9 +176,14 @@ export default function MealDishesBuilder({
               <div className="flex items-center gap-3">
                 <div className="h-12 w-12 shrink-0 overflow-hidden rounded-base border border-border bg-surface-elevated">
                   {dish.image ? (
-                    <img
-                      src={dish.image}
+                    <Image
+                      src={getCloudinaryImageUrl(dish.image, {
+                        width: 96,
+                        height: 96,
+                      })}
                       alt={dish.name}
+                      width={48}
+                      height={48}
                       className="h-full w-full object-cover"
                     />
                   ) : (
@@ -261,9 +268,14 @@ export default function MealDishesBuilder({
                 >
                   <div className="h-10 w-10 overflow-hidden rounded-base border border-border bg-surface-elevated">
                     {dish.image ? (
-                      <img
-                        src={dish.image}
+                      <Image
+                        src={getCloudinaryImageUrl(dish.image, {
+                          width: 80,
+                          height: 80,
+                        })}
                         alt={dish.name}
+                        width={40}
+                        height={40}
                         className="h-full w-full object-cover"
                       />
                     ) : null}

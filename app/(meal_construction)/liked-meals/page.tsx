@@ -1,10 +1,12 @@
 import Link from "next/link";
+import Image from "next/image";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import TemporalMessage from "../../../components/temporal-message";
 import PendingActionButton from "@/components/pending-action-button";
+import { getCloudinaryImageUrl } from "@/lib/cloudinary-image";
 
 type LikedMealsSearchParams = {
   dishQ?: string;
@@ -493,12 +495,17 @@ export default async function LikedMealsPage({
                       className="rounded-base bg-neutral-primary-soft p-3"
                     >
                       <div className="flex flex-col items-center gap-3">
-                        <div className="h-56 w-56 shrink-0 overflow-hidden rounded-base bg-background">
+                        <div className="relative h-56 w-56 shrink-0 overflow-hidden rounded-base bg-background">
                           {row.meal.image ? (
-                            <img
-                              src={row.meal.image}
+                            <Image
+                              src={getCloudinaryImageUrl(row.meal.image, {
+                                width: 448,
+                                height: 448,
+                              })}
                               alt={row.meal.name}
-                              className="h-full w-full object-cover"
+                              fill
+                              sizes="224px"
+                              className="object-cover"
                             />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center text-[10px] text-fg-disabled">
@@ -582,12 +589,17 @@ export default async function LikedMealsPage({
                       className="rounded-base bg-neutral-primary-soft p-3"
                     >
                       <div className="flex flex-col items-center gap-3">
-                        <div className="h-56 w-56 shrink-0 overflow-hidden rounded-base bg-background">
+                        <div className="relative h-56 w-56 shrink-0 overflow-hidden rounded-base bg-background">
                           {meal.image ? (
-                            <img
-                              src={meal.image}
+                            <Image
+                              src={getCloudinaryImageUrl(meal.image, {
+                                width: 448,
+                                height: 448,
+                              })}
                               alt={meal.name}
-                              className="h-full w-full object-cover"
+                              fill
+                              sizes="224px"
+                              className="object-cover"
                             />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center text-[10px] text-fg-disabled">
@@ -708,12 +720,17 @@ export default async function LikedMealsPage({
                             </span>
                           }
                         >
-                          <div className="h-56 w-56 overflow-hidden rounded-base bg-background">
+                          <div className="relative h-56 w-56 overflow-hidden rounded-base bg-background">
                             {dish.image ? (
-                              <img
-                                src={dish.image}
+                              <Image
+                                src={getCloudinaryImageUrl(dish.image, {
+                                  width: 448,
+                                  height: 448,
+                                })}
                                 alt={dish.name}
-                                className="h-full w-full object-cover"
+                                fill
+                                sizes="224px"
+                                className="object-cover"
                               />
                             ) : (
                               <div className="flex h-full w-full items-center justify-center text-[10px] text-fg-disabled">
@@ -814,12 +831,17 @@ export default async function LikedMealsPage({
                             </span>
                           }
                         >
-                          <div className="h-56 w-56 overflow-hidden rounded-base bg-background">
+                          <div className="relative h-56 w-56 overflow-hidden rounded-base bg-background">
                             {food.image ? (
-                              <img
-                                src={food.image}
+                              <Image
+                                src={getCloudinaryImageUrl(food.image, {
+                                  width: 448,
+                                  height: 448,
+                                })}
                                 alt={food.name}
-                                className="h-full w-full object-cover"
+                                fill
+                                sizes="224px"
+                                className="object-cover"
                               />
                             ) : (
                               <div className="flex h-full w-full items-center justify-center text-[10px] text-fg-disabled">

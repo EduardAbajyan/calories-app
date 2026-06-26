@@ -1,5 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
+import { getCloudinaryImageUrl } from "@/lib/cloudinary-image";
 
 type ResipesSearchParams = {
   recipeQ?: string;
@@ -110,12 +112,17 @@ export default async function ResipesPage({
                       : "border-border bg-surface-elevated hover:border-border-strong"
                   }`}
                 >
-                  <div className="mb-3 h-36 w-full overflow-hidden rounded-xl bg-background">
+                  <div className="relative mb-3 h-36 w-full overflow-hidden rounded-xl bg-background">
                     {dish.image ? (
-                      <img
-                        src={dish.image}
+                      <Image
+                        src={getCloudinaryImageUrl(dish.image, {
+                          width: 640,
+                          height: 288,
+                        })}
                         alt={dish.name}
-                        className="h-full w-full object-cover"
+                        fill
+                        sizes="(max-width: 640px) 100vw, 50vw"
+                        className="object-cover"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-xs text-foreground/45">
@@ -123,10 +130,13 @@ export default async function ResipesPage({
                       </div>
                     )}
                   </div>
-                  <p className="text-sm font-semibold text-foreground">{dish.name}</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {dish.name}
+                  </p>
                   <p className="mt-1 text-xs text-foreground/65">
                     {dish.ingredients.length} ingredient
-                    {dish.ingredients.length === 1 ? "" : "s"} • {Math.round(totalCalories)} kcal
+                    {dish.ingredients.length === 1 ? "" : "s"} •{" "}
+                    {Math.round(totalCalories)} kcal
                   </p>
                 </Link>
               </li>

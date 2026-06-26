@@ -1,6 +1,7 @@
 "use client";
 
 import { JSX, useState, useEffect } from "react";
+import Image from "next/image";
 import {
   fetchChosenDate,
   addDailyLogItem,
@@ -8,6 +9,7 @@ import {
   updateDailyLogItemAmount,
   type DailyLogItem,
 } from "@/server_actions/daily-log";
+import { getCloudinaryImageUrl } from "@/lib/cloudinary-image";
 
 function EditableAmountCell({
   logId,
@@ -126,9 +128,11 @@ export default function TableComponent({
 
     if (image) {
       return (
-        <img
-          src={image}
+        <Image
+          src={getCloudinaryImageUrl(image, { width: 64, height: 64 })}
           alt={name}
+          width={32}
+          height={32}
           className="h-8 w-8 shrink-0 rounded-xl border border-border object-cover shadow-sm"
         />
       );

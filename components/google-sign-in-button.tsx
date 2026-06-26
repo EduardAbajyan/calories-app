@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useAuthPending } from "@/components/auth-pending-context";
+import Image from "next/image";
 
 export default function SignInButton() {
   const [isPending, setIsPending] = useState(false);
@@ -28,11 +29,7 @@ export default function SignInButton() {
         onClick={handleSignIn}
         className="w-full max-w-100 flex items-center justify-center gap-2 p-5 border rounded-lg bg-transparent hover:bg-[#34A853]/15 transition disabled:cursor-not-allowed disabled:opacity-70"
       >
-        <img
-          src="https://authjs.dev/img/providers/google.svg"
-          alt="Google logo"
-          width={20}
-        />
+        <Image src="/google.svg" alt="Google logo" width={20} height={20} />
         <span>{disableButton ? "Signing in..." : "Sign in with Google"}</span>
       </button>
     </div>

@@ -16,10 +16,12 @@ import {
   revalidateDashboardTable,
 } from "@/app/dashboard/@meals/shared";
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import TemporalMessage from "../../../../components/temporal-message";
 import FormSubmitButton from "../../../../components/form-submit-button";
 import TimezoneOffsetInput from "@/components/timezone-offset-input";
+import { getCloudinaryImageUrl } from "@/lib/cloudinary-image";
 
 export default async function MealsPage({
   params,
@@ -638,12 +640,17 @@ export default async function MealsPage({
                     <input type="hidden" name="dishQ" value={dishQ} />
                     <input type="hidden" name="foodQ" value={foodQ} />
                     <TimezoneOffsetInput />
-                    <div className="h-44 w-full overflow-hidden rounded-base bg-background">
+                    <div className="relative h-44 w-full overflow-hidden rounded-base bg-background">
                       {meal.image ? (
-                        <img
-                          src={meal.image}
+                        <Image
+                          src={getCloudinaryImageUrl(meal.image, {
+                            width: 700,
+                            height: 352,
+                          })}
                           alt={meal.name}
-                          className="h-full w-full object-cover"
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                          className="object-cover"
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-[10px] text-foreground/45">
@@ -733,12 +740,17 @@ export default async function MealsPage({
                     <input type="hidden" name="dishQ" value={dishQ} />
                     <input type="hidden" name="foodQ" value={foodQ} />
                     <TimezoneOffsetInput />
-                    <div className="h-44 w-full overflow-hidden rounded-base bg-background">
+                    <div className="relative h-44 w-full overflow-hidden rounded-base bg-background">
                       {dish.image ? (
-                        <img
-                          src={dish.image}
+                        <Image
+                          src={getCloudinaryImageUrl(dish.image, {
+                            width: 700,
+                            height: 352,
+                          })}
                           alt={dish.name}
-                          className="h-full w-full object-cover"
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                          className="object-cover"
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-[10px] text-foreground/45">
@@ -823,12 +835,17 @@ export default async function MealsPage({
                     <input type="hidden" name="dishQ" value={dishQ} />
                     <input type="hidden" name="foodQ" value={foodQ} />
                     <TimezoneOffsetInput />
-                    <div className="h-44 w-full overflow-hidden rounded-base bg-background">
+                    <div className="relative h-44 w-full overflow-hidden rounded-base bg-background">
                       {food.image ? (
-                        <img
-                          src={food.image}
+                        <Image
+                          src={getCloudinaryImageUrl(food.image, {
+                            width: 700,
+                            height: 352,
+                          })}
                           alt={food.name}
-                          className="h-full w-full object-cover"
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                          className="object-cover"
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-[10px] text-foreground/45">
