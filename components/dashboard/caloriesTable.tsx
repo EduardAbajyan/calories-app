@@ -204,11 +204,15 @@ export default function TableComponent({
       calories: (
         <td className={`w-32 ${metricCellClass}`}>{item.calories} cal</td>
       ),
-      protein: <td className={`w-24 ${metricCellClass}`}>{item.protein}g</td>,
-      carbohydrates: (
-        <td className={`w-32 ${metricCellClass}`}>{item.carbohydrates}g</td>
+      protein: (
+        <td className={`w-24 ${metricCellClass}`}>{item.protein / 10}g</td>
       ),
-      fat: <td className={`w-20 ${metricCellClass}`}>{item.fat}g</td>,
+      carbohydrates: (
+        <td className={`w-32 ${metricCellClass}`}>
+          {item.carbohydrates / 10}g
+        </td>
+      ),
+      fat: <td className={`w-20 ${metricCellClass}`}>{item.fat / 10}g</td>,
     }));
 
     setSet(formattedData);

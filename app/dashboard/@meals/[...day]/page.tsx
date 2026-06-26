@@ -30,6 +30,7 @@ type DishMatch = {
   id: number;
   name: string;
   image: string | null;
+  amount: number | null;
   ingredients: { id: number }[];
 };
 
@@ -471,7 +472,10 @@ export default async function MealsPage({
       );
     }
 
-    let meal: { id: number; dishes: Array<{ dishId: number }> } | null;
+    let meal: {
+      id: number;
+      dishes: Array<{ dishId: number; amount: number }>;
+    } | null;
 
     try {
       meal = await prisma.meal.findUnique({
@@ -481,6 +485,7 @@ export default async function MealsPage({
           dishes: {
             select: {
               dishId: true,
+              amount: true,
             },
           },
         },
@@ -534,7 +539,7 @@ export default async function MealsPage({
           data: meal.dishes.map((dish) => ({
             user_day_id: userDay.id,
             dishId: dish.dishId,
-            amount: 1,
+            amount: dish.amount,
           })),
         });
       });
@@ -642,6 +647,7 @@ export default async function MealsPage({
         id: true,
         name: true,
         image: true,
+        amount: true,
         ingredients: {
           select: {
             id: true,
@@ -883,7 +889,11 @@ export default async function MealsPage({
                 >
                   <form action={addDishToToday} className="flex flex-col gap-3">
                     <input type="hidden" name="dishId" value={dish.id} />
-                    <input type="hidden" name="servings" value="1" />
+                    <input
+                      type="hidden"
+                      name="servings"
+                      value={dish.amount ?? "1"}
+                    />
                     <input type="hidden" name="mealQ" value={mealQ} />
                     <input type="hidden" name="dishQ" value={dishQ} />
                     <input type="hidden" name="foodQ" value={foodQ} />
@@ -912,7 +922,7 @@ export default async function MealsPage({
                     </div>
                     <FormSubmitButton
                       label={`Add dish to ${dayDisplay}'s list`}
-                      pendingLabel={`Add dish to ${dayDisplay}`}
+                      pendingLabel={`Adding dish to ${dayDisplay}'s list...`}
                       className="inline-flex items-center justify-center rounded-full border border-border bg-surface-elevated px-3 py-2 text-xs font-semibold text-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-border-strong hover:bg-surface"
                     />
                   </form>
@@ -1002,7 +1012,7 @@ export default async function MealsPage({
                     </div>
                     <FormSubmitButton
                       label={`Add 100g to ${dayDisplay}'s list`}
-                      pendingLabel={`Add 100g to ${dayDisplay}`}
+                      pendingLabel={`Adding 100g to ${dayDisplay}'s list...`}
                       className="inline-flex items-center justify-center rounded-full border border-border bg-surface-elevated px-3 py-2 text-xs font-semibold text-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-border-strong hover:bg-surface"
                     />
                   </form>
