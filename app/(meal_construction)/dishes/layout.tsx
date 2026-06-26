@@ -1,4 +1,3 @@
-import Sidebar from "@/components/dashboard/sidebar";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
@@ -25,7 +24,6 @@ export default async function DishesLayout({
 
   return (
     <>
-      <Sidebar />
       <div className="min-w-full py-4 md:ml-64 md:min-w-[calc(100%-16rem)] sm:py-8">
         <div className="relative flex h-full min-w-full items-center justify-center p-0 sm:p-0 md:min-w-[calc(100%-16rem)] md:p-4">
           <div className="relative flex h-full min-w-11/12 max-w-10/12 flex-col gap-5 rounded-base bg-neutral-secondary-soft p-3 sm:p-4 md:min-w-full md:max-w-full">
@@ -37,12 +35,12 @@ export default async function DishesLayout({
                 Search and inspect dishes
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-foreground/70">
-                Browse dish cards on the left and open full ingredient and macro
-                details on the right.
+                Browse dish cards and open full ingredient and macro details in
+                a spotlight view.
               </p>
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-2">
+            <div className="relative">
               {resipes}
               {choosed}
             </div>
