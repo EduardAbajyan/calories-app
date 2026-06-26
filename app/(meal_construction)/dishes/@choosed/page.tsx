@@ -136,23 +136,13 @@ export default async function ChoosedPage({
           )}
         </div>
 
-        <div className="mb-5 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-border bg-surface/85 px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
-              Dish weight
-            </p>
-            <p className="mt-1 text-lg font-semibold text-foreground">
-              {dish.amount} g
-            </p>
-          </div>
-          <div className="rounded-2xl border border-border bg-surface/85 px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
-              Recipe
-            </p>
-            <p className="mt-1 text-sm text-foreground/75">
-              {dish.path ? dish.path : "No recipe text saved yet"}
-            </p>
-          </div>
+        <div className="mb-5 rounded-2xl border border-border bg-surface/85 px-4 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+            Recipe
+          </p>
+          <p className="mt-1 text-sm text-foreground/75">
+            {dish.path ? dish.path : "No recipe text saved yet"}
+          </p>
         </div>
 
         <div className="mb-5 rounded-2xl border border-border bg-surface/85 p-4">
@@ -160,7 +150,7 @@ export default async function ChoosedPage({
             Macros per dish
           </p>
           <p className="text-sm text-foreground/80">
-            {Math.round(totals.calories)} kcal • P{" "}
+            {Math.round(totals.calories)} kcal • W {dish.amount}g • P{" "}
             {(totals.protein / 10).toFixed(1)} • C{" "}
             {(totals.carbohydrates / 10).toFixed(1)} • F{" "}
             {(totals.fat / 10).toFixed(1)}
