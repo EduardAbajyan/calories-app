@@ -1,7 +1,10 @@
 "use server";
 import { createUser } from "@/lib/auth";
 import {
+  ChangePasswordSchema,
+  ForgotPasswordSchema,
   LoginSchema,
+  ResetPasswordSchema,
   SignupSchema,
   VerifyEmailSchema,
   ResendVerificationSchema,
@@ -10,10 +13,17 @@ import {
   generateVerificationToken,
   verifyToken,
 } from "@/lib/verification-token";
-import { sendVerificationEmail } from "@/lib/email";
+import { sendPasswordResetEmail, sendVerificationEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { signIn } from "@/auth";
+import { auth, signIn } from "@/auth";
+import { randomUUID } from "crypto";
+
+const PASSWORD_RESET_TOKEN_EXPIRY = 30 * 60 * 1000;
+
+function getResetIdentifier(email: string) {
+  return `reset:${email.toLowerCase()}`;
+}
 
 // Consistent type for all action states
 export type ActionState = {
@@ -233,6 +243,194 @@ export async function resendVerificationAction(
     return {
       success: false,
       error: "Failed to send verification email. Please try again.",
+    };
+  }
+}
+
+export async function forgotPasswordAction(
+  prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const validatedData = ForgotPasswordSchema.parse({
+      email: formData.get("email"),
+    });
+
+    const email = validatedData.email.toLowerCase();
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    // Do not reveal whether account exists.
+    if (user) {
+      const token = randomUUID();
+      const expires = new Date(Date.now() + PASSWORD_RESET_TOKEN_EXPIRY);
+
+      await prisma.verificationToken.deleteMany({
+        where: { identifier: getResetIdentifier(email) },
+      });
+
+      await prisma.verificationToken.create({
+        data: {
+          identifier: getResetIdentifier(email),
+          token,
+          expires,
+        },
+      });
+
+      await sendPasswordResetEmail({ to: email, token });
+    }
+
+    return {
+      success: true,
+      message:
+        "If an account exists for this email, a password reset link has been sent.",
+    };
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    return {
+      success: false,
+      error: "Failed to process password reset request.",
+    };
+  }
+}
+
+export async function resetPasswordAction(
+  prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const validatedData = ResetPasswordSchema.parse({
+      email: formData.get("email"),
+      token: formData.get("token"),
+      password: formData.get("password"),
+    });
+
+    const email = validatedData.email.toLowerCase();
+    const tokenRecord = await prisma.verificationToken.findUnique({
+      where: {
+        identifier_token: {
+          identifier: getResetIdentifier(email),
+          token: validatedData.token,
+        },
+      },
+    });
+
+    if (!tokenRecord || tokenRecord.expires < new Date()) {
+      if (tokenRecord) {
+        await prisma.verificationToken.delete({
+          where: {
+            identifier_token: {
+              identifier: getResetIdentifier(email),
+              token: validatedData.token,
+            },
+          },
+        });
+      }
+
+      return {
+        success: false,
+        error: "Invalid or expired reset link.",
+      };
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return {
+        success: false,
+        error: "Invalid reset request.",
+      };
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const hash = await bcrypt.hash(validatedData.password, salt);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hash },
+    });
+
+    await prisma.verificationToken.delete({
+      where: {
+        identifier_token: {
+          identifier: getResetIdentifier(email),
+          token: validatedData.token,
+        },
+      },
+    });
+
+    return {
+      success: true,
+      message: "Password updated successfully. You can now sign in.",
+    };
+  } catch (error) {
+    console.error("Reset password error:", error);
+    return {
+      success: false,
+      error: "Failed to reset password.",
+    };
+  }
+}
+
+export async function changePasswordAction(
+  prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: "You must be signed in.",
+      };
+    }
+
+    const validatedData = ChangePasswordSchema.parse({
+      currentPassword: formData.get("currentPassword"),
+      newPassword: formData.get("newPassword"),
+      confirmPassword: formData.get("confirmPassword"),
+    });
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, password: true },
+    });
+
+    if (!user?.password) {
+      return {
+        success: false,
+        error:
+          "Password change is unavailable for this account. Use your provider login.",
+      };
+    }
+
+    const isValidCurrentPassword = await bcrypt.compare(
+      validatedData.currentPassword,
+      user.password,
+    );
+
+    if (!isValidCurrentPassword) {
+      return {
+        success: false,
+        error: "Current password is incorrect.",
+      };
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const hash = await bcrypt.hash(validatedData.newPassword, salt);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hash },
+    });
+
+    return {
+      success: true,
+      message: "Password changed successfully.",
+    };
+  } catch (error) {
+    console.error("Change password error:", error);
+    return {
+      success: false,
+      error: "Failed to change password.",
     };
   }
 }

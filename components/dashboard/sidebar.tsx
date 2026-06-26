@@ -260,6 +260,34 @@ export default function DashboardSidebar() {
 
             <li>
               <Link
+                href="/change-password"
+                aria-disabled={pendingHref === "/change-password"}
+                onClick={() => handleNavClick("/change-password")}
+                className={linkClassName("/change-password")}
+              >
+                <svg
+                  className="h-5 w-5 shrink-0 transition duration-75 group-hover:text-accent"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 8V5a3 3 0 0 0-6 0v3m-2 0h10a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Zm5 5a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+                  />
+                </svg>
+                <span className="ms-3">Change password</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link
                 href="/dishes"
                 aria-disabled={pendingHref === "/dishes"}
                 onClick={() => handleNavClick("/dishes")}

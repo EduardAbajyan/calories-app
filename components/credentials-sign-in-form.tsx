@@ -135,6 +135,9 @@ export default function AuthForm({
             />
           </div>
           <div className={cssClasses.actions}>
+            {mode === "login" ? (
+              <Link href="/forgot-password">Forgot password?</Link>
+            ) : null}
             <button
               className={cssClasses.button}
               disabled={isPending || isAnyPending}
