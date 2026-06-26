@@ -24,8 +24,8 @@ export default async function DishesLayout({
 
   return (
     <>
-      <div className="min-w-full py-4 md:ml-64 md:min-w-[calc(100%-16rem)] sm:py-8">
-        <div className="relative flex h-full min-w-full items-center justify-center p-0 sm:p-0 md:min-w-[calc(100%-16rem)] md:p-4">
+      <div className="min-w-full py-4 sm:py-8">
+        <div className="relative flex h-full min-w-full items-center justify-center p-0 sm:p-0 md:p-4">
           <div className="relative flex h-full min-w-11/12 max-w-10/12 flex-col gap-5 rounded-base bg-neutral-secondary-soft p-3 sm:p-4 md:min-w-full md:max-w-full">
             <div className="rounded-[28px] border border-border/70 bg-surface/80 px-6 py-5 shadow-[0_20px_60px_rgba(0,0,0,0.12)] backdrop-blur-xl">
               <p className="mb-2 inline-flex rounded-full border border-border bg-surface-elevated px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-accent">
