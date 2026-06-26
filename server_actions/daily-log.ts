@@ -182,6 +182,9 @@ export async function fetchChosenDate(
         };
       } else if (log.dish) {
         // Dish logging - calculate total calories from ingredients
+        const dishWeight = log.dish.amount;
+        const amountFactor =
+          dishWeight > 0 ? log.amount / dishWeight : log.amount;
         const totalCalories = log.dish.ingredients.reduce(
           (total, ingredient) => {
             return total + (ingredient.food.calories * ingredient.amount) / 100;
@@ -211,10 +214,10 @@ export async function fetchChosenDate(
           name: log.dish.name,
           image: log.dish.image,
           amount: log.amount,
-          calories: Math.round(totalCalories * log.amount),
-          protein: Math.round(totalProtein * log.amount),
-          carbohydrates: Math.round(totalCarbohydrates * log.amount),
-          fat: Math.round(totalFat * log.amount),
+          calories: Math.round(totalCalories * amountFactor),
+          protein: Math.round(totalProtein * amountFactor),
+          carbohydrates: Math.round(totalCarbohydrates * amountFactor),
+          fat: Math.round(totalFat * amountFactor),
         };
       } else {
         // Fallback case

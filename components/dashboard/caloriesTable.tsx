@@ -158,6 +158,7 @@ export default function TableComponent({
   const [id, setId] = useState(1);
   const [newItemsCount, setNewItemsCount] = useState(0);
   const [saveButton, setSaveButton] = useState(false);
+  const [dailyLogData, setDailyLogData] = useState<DailyLogItem[]>([]);
   const [newItems, setNewItems] = useState<{
     [key: number]: {
       name: string;
@@ -171,6 +172,7 @@ export default function TableComponent({
 
   async function refreshExistingRows() {
     const dailyLogData = await fetchChosenDate(day, tzOffsetMin);
+    setDailyLogData(dailyLogData);
 
     const formattedData = dailyLogData.map((item: DailyLogItem) => ({
       id: item.id,
@@ -220,6 +222,23 @@ export default function TableComponent({
       setId(Math.max(...dailyLogData.map((item) => item.id)));
     }
   }
+
+  const totalRow = dailyLogData.reduce(
+    (totals, item) => ({
+      amount: totals.amount + item.amount,
+      protein: totals.protein + item.protein,
+      carbohydrates: totals.carbohydrates + item.carbohydrates,
+      fat: totals.fat + item.fat,
+      calories: totals.calories + item.calories,
+    }),
+    {
+      amount: 0,
+      protein: 0,
+      carbohydrates: 0,
+      fat: 0,
+      calories: 0,
+    },
+  );
 
   // Fetch today's data from database
   useEffect(() => {
@@ -593,6 +612,29 @@ export default function TableComponent({
                 {item.calories}
               </tr>
             ))}
+            <tr className="border-t-2 border-border/80 bg-surface-elevated/80 font-semibold text-foreground">
+              <td className="px-3 py-4 text-sm uppercase tracking-[0.16em] text-accent">
+                Total
+              </td>
+              <td className="px-3 py-4 text-sm text-foreground/65">
+                Sum of listed items
+              </td>
+              <td className="px-3 py-4 text-sm text-foreground">
+                {totalRow.amount}g
+              </td>
+              <td className="px-3 py-4 text-sm text-foreground">
+                {totalRow.protein / 10}g
+              </td>
+              <td className="px-3 py-4 text-sm text-foreground">
+                {totalRow.carbohydrates / 10}g
+              </td>
+              <td className="px-3 py-4 text-sm text-foreground">
+                {totalRow.fat / 10}g
+              </td>
+              <td className="px-3 py-4 text-sm text-foreground">
+                {totalRow.calories} cal
+              </td>
+            </tr>
             <tr className="hidden lg:table-row bg-surface/60">
               <td className="px-3 py-4 text-sm font-medium text-foreground/55">
                 New
