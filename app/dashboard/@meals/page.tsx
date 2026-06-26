@@ -1,167 +1,23 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
 import { logMealsDashboardError } from "@/app/dashboard/@meals/logging";
+import {
+  buildDashboardHref,
+  DishMatch,
+  FoodMatch,
+  getOrCreateUserDayWithClient,
+  getRefreshKey,
+  getUTCStartOfClientDay,
+  MealMatch,
+  MealsSearchParams,
+  parseTimezoneOffsetMinutes,
+  revalidateDashboardTable,
+} from "@/app/dashboard/@meals/shared";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import TemporalMessage from "../../../components/temporal-message";
 import FormSubmitButton from "../../../components/form-submit-button";
 import TimezoneOffsetInput from "@/components/timezone-offset-input";
-
-type MealsSearchParams = {
-  mealQ?: string;
-  dishQ?: string;
-  foodQ?: string;
-  tzOffsetMin?: string;
-  success?: string;
-  error?: string;
-};
-
-type MealMatch = {
-  id: number;
-  name: string;
-  image: string | null;
-  likes: number;
-  dishes: { dishId: number }[];
-};
-
-type DishMatch = {
-  id: number;
-  name: string;
-  image: string | null;
-  amount: number | null;
-  ingredients: { id: number }[];
-};
-
-type FoodMatch = {
-  id: number;
-  name: string;
-  image: string | null;
-  calories: number;
-  protein: number;
-  carbohydrates: number;
-  fat: number;
-};
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-type UserDaysListClient = Pick<Prisma.TransactionClient, "userDaysList">;
-
-function getDayNumberFromDate(date: Date): number {
-  return Math.floor(date.getTime() / MS_PER_DAY);
-}
-
-function parseTimezoneOffsetMinutes(value: unknown): number {
-  const parsed = Number(value);
-
-  if (!Number.isFinite(parsed)) return 0;
-  if (!Number.isInteger(parsed)) return 0;
-  if (parsed < -14 * 60 || parsed > 14 * 60) return 0;
-
-  return parsed;
-}
-
-function getUTCStartOfClientDay(dayOffset = 0, tzOffsetMin = 0): Date {
-  const now = Date.now();
-  const localNowMs = now - tzOffsetMin * 60 * 1000;
-  const localDayStartMs = Math.floor(localNowMs / MS_PER_DAY) * MS_PER_DAY;
-  const targetLocalDayStartMs = localDayStartMs - dayOffset * MS_PER_DAY;
-  const utcMs = targetLocalDayStartMs + tzOffsetMin * 60 * 1000;
-
-  return new Date(utcMs);
-}
-
-async function getOrCreateUserDayWithClient(
-  userId: string,
-  dayStart: Date,
-  db: UserDaysListClient,
-) {
-  const dayNumber = getDayNumberFromDate(dayStart);
-  const dayEnd = new Date(dayStart.getTime() + MS_PER_DAY);
-
-  const existingByDayNumber = await db.userDaysList.findUnique({
-    where: {
-      userId_dayNumber: {
-        userId,
-        dayNumber,
-      },
-    },
-  });
-
-  if (existingByDayNumber) return existingByDayNumber;
-
-  const existing = await db.userDaysList.findFirst({
-    where: {
-      userId,
-      date: { gte: dayStart, lt: dayEnd },
-    },
-    orderBy: { id: "desc" },
-  });
-
-  if (existing) return existing;
-
-  try {
-    return await db.userDaysList.create({
-      data: { userId, dayNumber, date: dayStart },
-    });
-  } catch (error: unknown) {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      (error as { code?: string }).code === "P2002"
-    ) {
-      const raceByDayNumber = await db.userDaysList.findUnique({
-        where: {
-          userId_dayNumber: {
-            userId,
-            dayNumber,
-          },
-        },
-      });
-      if (raceByDayNumber) return raceByDayNumber;
-
-      const race = await db.userDaysList.findFirst({
-        where: { userId, date: { gte: dayStart, lt: dayEnd } },
-        orderBy: { id: "desc" },
-      });
-      if (race) return race;
-    }
-
-    throw error;
-  }
-}
-
-function buildDashboardHref(
-  mealQ: string,
-  dishQ: string,
-  foodQ: string,
-  tzOffsetMin: number,
-  message: { success?: string; error?: string; refreshKey?: string },
-) {
-  const params = new URLSearchParams();
-
-  if (mealQ) params.set("mealQ", mealQ);
-  if (dishQ) params.set("dishQ", dishQ);
-  if (foodQ) params.set("foodQ", foodQ);
-  params.set("tzOffsetMin", String(tzOffsetMin));
-
-  if (message.success) params.set("success", message.success);
-  if (message.error) params.set("error", message.error);
-  if (message.refreshKey) params.set("refreshKey", message.refreshKey);
-
-  const query = params.toString();
-  return query ? `/dashboard?${query}` : "/dashboard";
-}
-
-function revalidateDashboardTable() {
-  revalidatePath("/dashboard", "layout");
-}
-
-function getRefreshKey() {
-  return Date.now().toString();
-}
 
 export default async function MealsPage({
   searchParams,
@@ -200,9 +56,16 @@ export default async function MealsPage({
 
     if (!Number.isInteger(foodId) || foodId <= 0) {
       redirect(
-        buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
-          error: "Invalid food",
-        }),
+        buildDashboardHref(
+          0,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Invalid food",
+          },
+        ),
       );
     }
 
@@ -235,15 +98,22 @@ export default async function MealsPage({
         tzOffsetMin: nextTzOffsetMin,
       });
       redirect(
-        buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
-          error: "Failed to add food",
-        }),
+        buildDashboardHref(
+          0,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Failed to add food",
+          },
+        ),
       );
     }
 
-    revalidateDashboardTable();
+    revalidateDashboardTable(0);
     redirect(
-      buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
+      buildDashboardHref(0, nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
         success: "food",
         refreshKey: getRefreshKey(),
       }),
@@ -269,9 +139,16 @@ export default async function MealsPage({
 
     if (!Number.isInteger(dishId) || dishId <= 0) {
       redirect(
-        buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
-          error: "Invalid dish",
-        }),
+        buildDashboardHref(
+          0,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Invalid dish",
+          },
+        ),
       );
     }
 
@@ -289,17 +166,31 @@ export default async function MealsPage({
         tzOffsetMin: nextTzOffsetMin,
       });
       redirect(
-        buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
-          error: "Failed to add dish",
-        }),
+        buildDashboardHref(
+          0,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Failed to add dish",
+          },
+        ),
       );
     }
 
     if (!dish) {
       redirect(
-        buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
-          error: "Dish not found",
-        }),
+        buildDashboardHref(
+          0,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Dish not found",
+          },
+        ),
       );
     }
 
@@ -332,15 +223,22 @@ export default async function MealsPage({
         tzOffsetMin: nextTzOffsetMin,
       });
       redirect(
-        buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
-          error: "Failed to add dish",
-        }),
+        buildDashboardHref(
+          0,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Failed to add dish",
+          },
+        ),
       );
     }
 
-    revalidateDashboardTable();
+    revalidateDashboardTable(0);
     redirect(
-      buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
+      buildDashboardHref(0, nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
         success: "dish",
         refreshKey: getRefreshKey(),
       }),
@@ -365,9 +263,16 @@ export default async function MealsPage({
 
     if (!Number.isInteger(mealId) || mealId <= 0) {
       redirect(
-        buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
-          error: "Invalid meal",
-        }),
+        buildDashboardHref(
+          0,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Invalid meal",
+          },
+        ),
       );
     }
 
@@ -396,17 +301,31 @@ export default async function MealsPage({
         tzOffsetMin: nextTzOffsetMin,
       });
       redirect(
-        buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
-          error: "Failed to add meal",
-        }),
+        buildDashboardHref(
+          0,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Failed to add meal",
+          },
+        ),
       );
     }
 
     if (!meal || meal.dishes.length === 0) {
       redirect(
-        buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
-          error: "Meal has no dishes",
-        }),
+        buildDashboardHref(
+          0,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Meal has no dishes",
+          },
+        ),
       );
     }
 
@@ -435,9 +354,16 @@ export default async function MealsPage({
         dishCount: meal.dishes.length,
       });
       redirect(
-        buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
-          error: "Failed to add meal",
-        }),
+        buildDashboardHref(
+          0,
+          nextMealQ,
+          nextDishQ,
+          nextFoodQ,
+          nextTzOffsetMin,
+          {
+            error: "Failed to add meal",
+          },
+        ),
       );
     }
 
@@ -461,9 +387,9 @@ export default async function MealsPage({
       });
     }
 
-    revalidateDashboardTable();
+    revalidateDashboardTable(0);
     redirect(
-      buildDashboardHref(nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
+      buildDashboardHref(0, nextMealQ, nextDishQ, nextFoodQ, nextTzOffsetMin, {
         success: "meal",
         refreshKey: getRefreshKey(),
       }),
