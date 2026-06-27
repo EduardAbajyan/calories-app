@@ -67,13 +67,15 @@ export default async function Home({
       <div className={styles.container}>
         <div className={styles.authShell}>
           <div className={styles.brandBlock}>
-            <Image
-              src={logo}
-              alt="Calorie tracker logo"
-              width={315}
-              height={270}
-              loading="eager"
-            />
+            <div className={styles.logoWrap}>
+              <Image
+                src={logo}
+                alt="Calorie tracker logo"
+                width={315}
+                height={270}
+                loading="eager"
+              />
+            </div>
             <p className={styles.tagline}>Meal Tracker</p>
             <h1 className={styles.title}>
               Simple daily logging with reusable recipes

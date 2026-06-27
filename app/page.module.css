@@ -31,6 +31,13 @@
     justify-content: center;
 }
 
+.logoWrap {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+
 .tagline {
     margin-top: 2px;
     font-size: 12px;
@@ -61,8 +68,10 @@
     box-shadow: 0 14px 32px rgba(18, 18, 18, 0.06);
     padding: 20px;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    gap: 12px;
 }
 
 .introSection {
@@ -144,6 +153,11 @@
     .title,
     .subtitle {
         max-width: 100%;
+    }
+
+    .authPanel {
+        padding: 16px;
+        gap: 10px;
     }
 }
 

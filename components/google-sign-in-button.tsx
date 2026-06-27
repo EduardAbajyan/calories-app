@@ -22,12 +22,12 @@ export default function SignInButton() {
   const disableButton = isPending || isAnyPending;
 
   return (
-    <div className="w-full px-5 flex flex-col items-center gap-4">
+    <div className="w-full flex flex-col items-center gap-3">
       <button
         type="button"
         disabled={disableButton}
         onClick={handleSignIn}
-        className="w-full max-w-100 flex items-center justify-center gap-2 p-5 border rounded-lg bg-transparent hover:bg-[#34A853]/15 transition disabled:cursor-not-allowed disabled:opacity-70"
+        className="w-full max-w-100 flex items-center justify-center gap-2 px-5 py-4 border border-black/65 rounded-lg bg-transparent hover:bg-[#34A853]/15 transition disabled:cursor-not-allowed disabled:opacity-70"
       >
         <Image src="/google.svg" alt="Google logo" width={20} height={20} />
         <span>{disableButton ? "Signing in..." : "Sign in with Google"}</span>
