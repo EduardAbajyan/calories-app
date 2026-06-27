@@ -41,6 +41,12 @@ const appScreenshots = [
     title: "Create foods",
   },
   {
+    id: "6",
+    src: "https://res.cloudinary.com/dgh4grnch/image/upload/v1782578140/6_qjkax3.png",
+    alt: "Adjust the amounts of items in the daily log and see the updated totals",
+    title: "Update daily log items' amounts",
+  },
+  {
     id: "7",
     src: "https://res.cloudinary.com/dgh4grnch/image/upload/v1782558716/7_tjaspn.png",
     alt: "Dish builder with selected foods and totals",

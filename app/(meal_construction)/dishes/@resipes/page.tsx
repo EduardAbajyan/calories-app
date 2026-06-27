@@ -3,15 +3,15 @@ import { prisma } from "@/lib/prisma";
 import { getCloudinaryImageUrl } from "@/lib/cloudinary-image";
 import PendingNavigationLink from "@/components/pending-navigation-link";
 
-type ResipesSearchParams = {
+type RecipesSearchParams = {
   recipeQ?: string;
   dishId?: string;
 };
 
-export default async function ResipesPage({
+export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: Promise<ResipesSearchParams>;
+  searchParams: Promise<RecipesSearchParams>;
 }) {
   const resolvedSearchParams = await searchParams;
   const recipeQ = String(resolvedSearchParams.recipeQ ?? "").trim();
@@ -47,7 +47,7 @@ export default async function ResipesPage({
     <section className="relative w-full rounded-[28px] border border-border/70 bg-surface/80 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.12)] backdrop-blur-xl">
       <div className="mb-5">
         <p className="mb-2 inline-flex rounded-full border border-border bg-surface-elevated px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-accent">
-          Resipes
+          Recipes
         </p>
         <h3 className="text-xl font-semibold tracking-tight text-foreground">
           Search dishes
