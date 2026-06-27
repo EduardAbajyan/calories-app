@@ -257,7 +257,7 @@ export default function DishFoodsBuilder({
             Select one or more foods above.
           </p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {selectedFoods.map((selectedFood) => {
               const food = transformedFoods.find(
                 (item) => item.id === selectedFood.foodId,
@@ -269,52 +269,60 @@ export default function DishFoodsBuilder({
               return (
                 <div
                   key={selectedFood.foodId}
-                  className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl border border-border px-3 py-2"
+                  className="rounded-base border border-border bg-surface px-3 py-2"
                 >
-                  <div className="h-10 w-10 overflow-hidden rounded-base border border-border bg-surface-elevated">
-                    {food.image ? (
-                      <Image
-                        src={getCloudinaryImageUrl(food.image, {
-                          width: 80,
-                          height: 80,
-                        })}
-                        alt={food.name}
-                        width={40}
-                        height={40}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : null}
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-base border border-border bg-surface-elevated">
+                      {food.image ? (
+                        <Image
+                          src={getCloudinaryImageUrl(food.image, {
+                            width: 96,
+                            height: 96,
+                          })}
+                          alt={food.name}
+                          width={48}
+                          height={48}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[10px] text-foreground/50">
+                          No image
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-foreground">
+                        {food.name}
+                      </p>
+                      <p className="mt-1 text-xs text-foreground/60">
+                        {(
+                          food.calories *
+                          (Number(selectedFood.amount) / 100)
+                        ).toFixed(0)}{" "}
+                        kcal • P{" "}
+                        {(
+                          food.protein *
+                          (Number(selectedFood.amount) / 1000)
+                        ).toFixed(1)}{" "}
+                        • C{" "}
+                        {(
+                          food.carbohydrates *
+                          (Number(selectedFood.amount) / 1000)
+                        ).toFixed(1)}{" "}
+                        • F{" "}
+                        {(
+                          food.fat *
+                          (Number(selectedFood.amount) / 1000)
+                        ).toFixed(1)}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="min-w-0">
-                    <p className="truncate text-sm text-foreground">
-                      {food.name}
-                    </p>
-                    <p className="text-xs text-foreground/60">
-                      {(
-                        food.calories *
-                        (Number(selectedFood.amount) / 100)
-                      ).toFixed(0)}{" "}
-                      kcal • P{" "}
-                      {(
-                        food.protein *
-                        (Number(selectedFood.amount) / 1000)
-                      ).toFixed(1)}{" "}
-                      • C{" "}
-                      {(
-                        food.carbohydrates *
-                        (Number(selectedFood.amount) / 1000)
-                      ).toFixed(1)}{" "}
-                      • F{" "}
-                      {(
-                        food.fat *
-                        (Number(selectedFood.amount) / 1000)
-                      ).toFixed(1)}
-                    </p>
-                  </div>
-
-                  <label className="flex items-center gap-2 text-sm text-foreground">
-                    Amount in grams:
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <label className="text-sm text-foreground">
+                      Amount in grams:
+                    </label>
                     <input
                       type="number"
                       min={0}
@@ -324,9 +332,9 @@ export default function DishFoodsBuilder({
                       onChange={(event) =>
                         updateAmount(selectedFood.foodId, event.target.value)
                       }
-                      className="w-20 rounded-2xl border border-border bg-surface-elevated px-2 py-1 text-sm text-foreground outline-none focus:border-accent focus:ring-4 focus:ring-accent-soft"
+                      className="w-24 rounded-full border border-border bg-surface-elevated px-4 py-1.5 text-sm text-foreground outline-none focus:border-accent focus:ring-4 focus:ring-accent-soft"
                     />
-                  </label>
+                  </div>
 
                   <input
                     type="hidden"
