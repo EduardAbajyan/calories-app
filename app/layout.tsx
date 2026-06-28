@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { SITE_URL } from "./seo";
+import logo from "./assets/logo.png";
 
 const defaultDescription =
   "CalorieCounter helps you log foods, build dishes, compose meals, and track calories and macros in one clean daily workflow.";
@@ -25,6 +26,11 @@ export const metadata: Metadata = {
   },
   description: defaultDescription,
   applicationName: "CalorieCounter",
+  icons: {
+    icon: logo.src,
+    shortcut: logo.src,
+    apple: logo.src,
+  },
   category: "health",
   keywords: [
     "calorie tracker",
