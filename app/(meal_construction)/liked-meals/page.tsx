@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import TemporalMessage from "../../../components/temporal-message";
 import PendingActionButton from "@/components/pending-action-button";
 import { getCloudinaryImageUrl } from "@/lib/cloudinary-image";
+import { buildMetadata } from "@/app/seo";
 
 type LikedMealsSearchParams = {
   dishQ?: string;
@@ -33,9 +34,13 @@ function parseLimit(value: string | undefined) {
   return parsed;
 }
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Liked Meals",
-};
+  description:
+    "Browse and manage your favorite meals and quickly reuse them in your meal planning flow.",
+  path: "/liked-meals",
+  noIndex: true,
+});
 
 export default async function LikedMealsPage({
   searchParams,

@@ -1,9 +1,14 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { buildMetadata } from "@/app/seo";
 
-export const metadata = {
-  title: "Dishes",
-};
+export const metadata = buildMetadata({
+  title: "Dish Explorer",
+  description:
+    "Search dish recipes, inspect ingredient details, and review nutrition per dish and per 100g.",
+  path: "/dishes",
+  noIndex: true,
+});
 
 export const dynamic = "force-dynamic";
 

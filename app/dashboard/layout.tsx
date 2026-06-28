@@ -1,10 +1,15 @@
 import Sidebar from "@/components/dashboard/sidebar";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { buildMetadata } from "@/app/seo";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Dashboard",
-};
+  description:
+    "Review daily meals, compare calories and macros, and manage food entries from your dashboard.",
+  path: "/dashboard",
+  noIndex: true,
+});
 
 export const dynamic = "force-dynamic";
 

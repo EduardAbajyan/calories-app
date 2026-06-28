@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
@@ -8,6 +9,38 @@ import logo from "./assets/logo.png";
 import GoogleSingIn from "@/components/google-sign-in-button";
 import AuthForm from "@/components/credentials-sign-in-form";
 import { AuthPendingProvider } from "@/components/auth-pending-context";
+
+const homeDescription =
+  "Track daily calories and macros, create foods, build dishes from ingredients, and compose meals with instant nutrition totals.";
+
+export const metadata: Metadata = {
+  title: "CalorieCounter App Overview",
+  description: homeDescription,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "CalorieCounter App Overview",
+    description: homeDescription,
+    url: "/",
+    images: [
+      {
+        url: "https://res.cloudinary.com/dgh4grnch/image/upload/v1782558715/1_lv5wkc.png",
+        width: 1200,
+        height: 630,
+        alt: "CalorieCounter app screens",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CalorieCounter App Overview",
+    description: homeDescription,
+    images: [
+      "https://res.cloudinary.com/dgh4grnch/image/upload/v1782558715/1_lv5wkc.png",
+    ],
+  },
+};
 
 const appScreenshots = [
   {
@@ -65,12 +98,43 @@ export default async function Home({
 }: {
   searchParams: { mode?: "login" | "signup" };
 }) {
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    "https://calories-app.eduardabajyan.com";
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "CalorieCounter",
+    applicationCategory: "HealthApplication",
+    operatingSystem: "Web",
+    url: siteUrl,
+    description: homeDescription,
+    image:
+      "https://res.cloudinary.com/dgh4grnch/image/upload/v1782558715/1_lv5wkc.png",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+    featureList: [
+      "Daily calorie and macro logging",
+      "Build dishes from multiple foods",
+      "Build meals from dishes",
+      "Date-based dashboard and totals",
+    ],
+  };
+
   const session = await auth();
   if (!session) {
     const Params = await searchParams;
     const mode = Params.mode ?? "login";
     return (
       <div className={styles.container}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <div className={styles.authShell}>
           <div className={styles.brandBlock}>
             <div className={styles.logoWrap}>

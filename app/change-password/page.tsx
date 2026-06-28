@@ -1,10 +1,15 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import ChangePasswordForm from "@/components/change-password-form";
+import { buildMetadata } from "@/app/seo";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Change Password",
-};
+  description:
+    "Update your account password to keep your CalorieCounter account secure.",
+  path: "/change-password",
+  noIndex: true,
+});
 
 export default async function ChangePasswordPage() {
   const session = await auth();

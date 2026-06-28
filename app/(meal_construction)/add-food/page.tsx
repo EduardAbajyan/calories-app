@@ -5,15 +5,20 @@ import ImageFileInput from "@/components/image-file-input";
 import FormSubmitButton from "@/components/form-submit-button";
 import TemporalMessage from "../../../components/temporal-message";
 import cloudinary from "@/cludinary";
+import { buildMetadata } from "@/app/seo";
 
 type AddFoodSearchParams = {
   success?: string;
   error?: string;
 };
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Add Food",
-};
+  description:
+    "Create a food entry with calories, macros, and optional image to reuse in dishes and meals.",
+  path: "/add-food",
+  noIndex: true,
+});
 
 export default async function AddFoodPage({
   searchParams,

@@ -6,15 +6,20 @@ import ImageFileInput from "@/components/image-file-input";
 import FormSubmitButton from "@/components/form-submit-button";
 import DishFoodsBuilder from "@/components/dish-foods-builder";
 import TemporalMessage from "../../../components/temporal-message";
+import { buildMetadata } from "@/app/seo";
 
 type AddDishSearchParams = {
   success?: string;
   error?: string;
 };
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Add Dish",
-};
+  description:
+    "Build a dish from selected foods and amounts with live nutrition totals.",
+  path: "/add-dish",
+  noIndex: true,
+});
 
 export default async function AddDishPage({
   searchParams,

@@ -6,15 +6,20 @@ import ImageFileInput from "@/components/image-file-input";
 import FormSubmitButton from "@/components/form-submit-button";
 import MealDishesBuilder from "@/components/meal-dishes-builder";
 import TemporalMessage from "../../../components/temporal-message";
+import { buildMetadata } from "@/app/seo";
 
 type AddMealSearchParams = {
   success?: string;
   error?: string;
 };
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Add Meal",
-};
+  description:
+    "Compose a meal from dishes and adjust grams with automatic calorie and macro totals.",
+  path: "/add-meal",
+  noIndex: true,
+});
 
 export default async function AddMealPage({
   searchParams,
