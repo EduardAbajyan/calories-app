@@ -18,6 +18,11 @@ type IngredientWithFood = {
 };
 
 function extractFirstJsonObject(text: string): string | null {
+  const fencedJsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/i);
+  if (fencedJsonMatch?.[1]) {
+    return fencedJsonMatch[1].trim();
+  }
+
   const start = text.indexOf("{");
   const end = text.lastIndexOf("}");
 
@@ -149,6 +154,7 @@ export async function generateRecipeAction(
     "1) Return valid JSON only.",
     '2) The JSON must contain exactly one property: "recipe".',
     "3) The recipe value must be plain text instructions in English.",
+    "4) Do not include markdown code fences.",
   ].join("\n\n");
 
   try {
@@ -168,21 +174,15 @@ export async function generateRecipeAction(
           ],
           generationConfig: {
             responseMimeType: "application/json",
-            responseSchema: {
-              type: "OBJECT",
-              properties: {
-                recipe: {
-                  type: "STRING",
-                },
-              },
-              required: ["recipe"],
-            },
           },
         }),
       },
     );
 
     if (!response.ok) {
+      const failureBody = await response.text();
+      console.error("Gemini generation failed:", response.status, failureBody);
+
       return {
         recipe: "",
         error: "Failed to generate recipe.",
@@ -199,6 +199,7 @@ export async function generateRecipeAction(
         };
       }>;
     };
+console.log("Gemini generation response:", data);
 
     const rawText =
       data.candidates?.[0]?.content?.parts
@@ -215,7 +216,31 @@ export async function generateRecipeAction(
       };
     }
 
-    const parsed = JSON.parse(candidateJson) as { recipe?: unknown };
+    const parsedUnknown = JSON.parse(candidateJson) as unknown;
+
+    if (
+      typeof parsedUnknown !== "object" ||
+      parsedUnknown === null ||
+      Array.isArray(parsedUnknown)
+    ) {
+      return {
+        recipe: "",
+        error: "Gemini returned an invalid format.",
+        generated: false,
+      };
+    }
+
+    const parsed = parsedUnknown as Record<string, unknown>;
+    const keys = Object.keys(parsed);
+
+    if (keys.length !== 1 || keys[0] !== "recipe") {
+      return {
+        recipe: "",
+        error: "Gemini returned an invalid format.",
+        generated: false,
+      };
+    }
+
     const recipe =
       typeof parsed.recipe === "string" ? parsed.recipe.trim() : "";
 
