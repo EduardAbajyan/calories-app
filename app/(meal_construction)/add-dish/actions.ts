@@ -157,31 +157,85 @@ export async function generateRecipeAction(
     "4) Do not include markdown code fences.",
   ].join("\n\n");
 
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: prompt }],
-            },
-          ],
-          generationConfig: {
-            responseMimeType: "application/json",
-          },
-        }),
-      },
-    );
+  const configuredModel = (
+    process.env.GEMINI_MODEL ?? "gemini-2.5-flash"
+  ).trim();
+  const candidateModels = Array.from(
+    new Set(
+      [configuredModel, "gemini-2.5-flash", "gemini-2.5-flash-lite"].filter(
+        (model) => model.length > 0,
+      ),
+    ),
+  );
 
-    if (!response.ok) {
-      const failureBody = await response.text();
-      console.error("Gemini generation failed:", response.status, failureBody);
+  try {
+    let data: {
+      candidates?: Array<{
+        content?: {
+          parts?: Array<{
+            text?: string;
+          }>;
+        };
+      }>;
+    } | null = null;
+    let lastStatus = 0;
+    let lastFailureBody = "";
+
+    for (const model of candidateModels) {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: prompt }],
+              },
+            ],
+            generationConfig: {
+              responseMimeType: "application/json",
+            },
+          }),
+        },
+      );
+
+      if (response.ok) {
+        data = (await response.json()) as {
+          candidates?: Array<{
+            content?: {
+              parts?: Array<{
+                text?: string;
+              }>;
+            };
+          }>;
+        };
+        break;
+      }
+
+      lastStatus = response.status;
+      lastFailureBody = await response.text();
+      console.error(
+        "Gemini generation failed:",
+        model,
+        response.status,
+        lastFailureBody,
+      );
+
+      if (response.status === 404) {
+        continue;
+      }
+
+      if (response.status === 429) {
+        return {
+          recipe: "",
+          error: "Gemini quota exceeded. Please wait a minute and try again.",
+          generated: false,
+        };
+      }
 
       return {
         recipe: "",
@@ -190,16 +244,34 @@ export async function generateRecipeAction(
       };
     }
 
-    const data = (await response.json()) as {
-      candidates?: Array<{
-        content?: {
-          parts?: Array<{
-            text?: string;
-          }>;
+    if (!data) {
+      if (lastStatus === 404) {
+        return {
+          recipe: "",
+          error:
+            "Gemini model is unavailable. Set GEMINI_MODEL to an available model and try again.",
+          generated: false,
         };
-      }>;
-    };
-console.log("Gemini generation response:", data);
+      }
+
+      if (lastStatus === 429) {
+        return {
+          recipe: "",
+          error: "Gemini quota exceeded. Please wait a minute and try again.",
+          generated: false,
+        };
+      }
+
+      if (lastFailureBody) {
+        console.error("Gemini final failure body:", lastFailureBody);
+      }
+
+      return {
+        recipe: "",
+        error: "Failed to generate recipe.",
+        generated: false,
+      };
+    }
 
     const rawText =
       data.candidates?.[0]?.content?.parts
