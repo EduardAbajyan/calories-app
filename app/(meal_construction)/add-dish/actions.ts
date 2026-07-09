@@ -1,5 +1,3 @@
-"use server";
-
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -43,7 +41,9 @@ export async function generateRecipeAction(
   _prevState: GenerateRecipeState,
   formData: FormData,
 ): Promise<GenerateRecipeState> {
-  console.log("\n\n\n\n\nGenerating recipe with formData:", formData); // Debugging line
+  "use server";
+
+  console.log(`/n/n/n/nGenerating \n\n\n\n\nrecipe with formData: `, formData); // Debugging line
 
   const session = await auth();
   if (!session?.user?.id) {
