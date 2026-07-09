@@ -233,12 +233,20 @@ export default async function AddDishPage({
           <ImageFileInput />
 
           <div className="space-y-2 rounded-3xl border border-border bg-surface-elevated p-4 shadow-sm">
-            <label
-              htmlFor="path"
-              className="block text-sm font-medium text-foreground"
-            >
-              Recipe (optional)
-            </label>
+            <div className="flex items-center justify-between gap-3">
+              <label
+                htmlFor="path"
+                className="block text-sm font-medium text-foreground"
+              >
+                Recipe (optional)
+              </label>
+              <button
+                type="button"
+                className="inline-flex items-center rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-border-strong hover:bg-surface-elevated"
+              >
+                Generate
+              </button>
+            </div>
             <textarea
               id="path"
               name="path"
