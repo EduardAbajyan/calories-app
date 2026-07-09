@@ -1,17 +1,8 @@
+"use server";
+
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-
-export type GenerateRecipeState = {
-  recipe: string;
-  error: string | null;
-  generated: boolean;
-};
-
-export const initialGenerateRecipeState: GenerateRecipeState = {
-  recipe: "",
-  error: null,
-  generated: false,
-};
+import type { GenerateRecipeState } from "@/app/(meal_construction)/add-dish/recipe-state";
 
 type IngredientWithFood = {
   foodId: number;
@@ -41,10 +32,6 @@ export async function generateRecipeAction(
   _prevState: GenerateRecipeState,
   formData: FormData,
 ): Promise<GenerateRecipeState> {
-  "use server";
-
-  console.log(`/n/n/n/nGenerating \n\n\n\n\nrecipe with formData: `, formData); // Debugging line
-
   const session = await auth();
   if (!session?.user?.id) {
     return {
@@ -53,8 +40,6 @@ export async function generateRecipeAction(
       generated: false,
     };
   }
-
-  console.log("User session:", session);
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -65,8 +50,6 @@ export async function generateRecipeAction(
     };
   }
 
-  console.log("GEMINI_API_KEY is present.");
-
   const dishName = String(formData.get("name") ?? "").trim();
   const foodIdsFromForm = formData.getAll("foodIds");
   const amountsFromForm = formData.getAll("amounts");
@@ -75,8 +58,6 @@ export async function generateRecipeAction(
     foodId: Number(foodIdValue),
     amount: Number(amountsFromForm[index] ?? ""),
   }));
-
-  console.log("Parsed ingredients:", parsedIngredients);
 
   const hasInvalidIngredient = parsedIngredients.some(
     (ingredient) =>
@@ -141,8 +122,6 @@ export async function generateRecipeAction(
     });
   }
 
-  console.log("Ingredients with food details:", ingredientsWithFood);
-
   const ingredientLines = ingredientsWithFood
     .map((ingredient) => {
       const factor = ingredient.amount / 100;
@@ -160,8 +139,6 @@ export async function generateRecipeAction(
       ].join("\n");
     })
     .join("\n");
-
-  console.log("Ingredient lines for prompt:", ingredientLines);
 
   const prompt = [
     "Create concise cooking instructions for this dish.",
@@ -205,8 +182,6 @@ export async function generateRecipeAction(
       },
     );
 
-    console.log("Gemini API response status:", response.status);
-
     if (!response.ok) {
       return {
         recipe: "",
@@ -224,8 +199,6 @@ export async function generateRecipeAction(
         };
       }>;
     };
-
-    console.log("Gemini API response data:", data);
 
     const rawText =
       data.candidates?.[0]?.content?.parts

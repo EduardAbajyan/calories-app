@@ -1,10 +1,8 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import {
-  generateRecipeAction,
-  initialGenerateRecipeState,
-} from "@/app/(meal_construction)/add-dish/actions";
+import { generateRecipeAction } from "@/app/(meal_construction)/add-dish/actions";
+import { initialGenerateRecipeState } from "@/app/(meal_construction)/add-dish/recipe-state";
 
 export default function RecipeGeneratorField() {
   const [state, formAction, isPending] = useActionState(
