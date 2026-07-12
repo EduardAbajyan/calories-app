@@ -155,6 +155,8 @@ export async function generateRecipeAction(
     '2) The JSON must contain exactly one property: "recipe".',
     "3) The recipe value must be plain text instructions in English.",
     "4) Do not include markdown code fences.",
+    "5) Do not include any other properties or text.",
+    "6) The text must be well structured, clear, and easy to read and follow.",
   ].join("\n\n");
 
   const configuredModel = (
