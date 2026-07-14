@@ -6,6 +6,7 @@ import ImageFileInput from "@/components/image-file-input";
 import FormSubmitButton from "@/components/form-submit-button";
 import DishFoodsBuilder from "@/components/dish-foods-builder";
 import RecipeGeneratorField from "@/components/recipe-generator-field";
+import DishNameInput from "@/components/dish-name-input";
 import TemporalMessage from "../../../components/temporal-message";
 import { buildMetadata } from "@/app/seo";
 
@@ -221,11 +222,7 @@ export default async function AddDishPage({
             >
               Dish name
             </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
+            <DishNameInput
               placeholder="For example: Chicken stir-fry"
               className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-foreground shadow-sm outline-none transition placeholder:text-foreground/35 focus:border-accent focus:ring-4 focus:ring-accent-soft"
             />
