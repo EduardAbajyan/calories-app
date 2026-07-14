@@ -127,7 +127,25 @@ export default async function AddDishPage({
       }
 
       const imageBuffer = Buffer.from(await imageInput.arrayBuffer());
-      image = `data:${imageInput.type};base64,${imageBuffer.toString("base64")}`;
+
+      try {
+        // Upload to Cloudinary and store the secure URL
+        const cloudinary = (await import("@/cludinary")).default;
+        const dataUri = `data:${imageInput.type};base64,${imageBuffer.toString("base64")}`;
+        const uploadResult = await cloudinary.uploader.upload(dataUri, {
+          folder: "dishes",
+          resource_type: "image",
+        });
+
+        image =
+          typeof uploadResult.secure_url === "string"
+            ? uploadResult.secure_url
+            : null;
+      } catch (uploadErr) {
+        console.error("Cloudinary upload failed:", uploadErr);
+        // Fallback: store as data URL so the image isn't lost
+        image = `data:${imageInput.type};base64,${imageBuffer.toString("base64")}`;
+      }
     }
 
     try {
